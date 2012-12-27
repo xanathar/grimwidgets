@@ -3,3 +3,4 @@ v0.01
 		- mod_assets/grimwidgets/grimwidgets.lua (party hooks are defined here)
 		- added gw script entity
 		- added debug script entity, with grid function.
+(Xan) 	- added small button enabling grid function
