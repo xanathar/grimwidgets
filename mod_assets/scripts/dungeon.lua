@@ -149,4 +149,10 @@ function grid(size)\
 \9gw.addElement(grid)\
 end\
 \
-")
+function debugGrid()\
+\9grid(100)\
+end")
+spawn("wall_button", 14,15,3, "wall_button_1")
+	:addConnector("toggle", "debug", "debugGrid")
+spawn("dungeon_wall_text", 14,15,3, "dungeon_wall_text_1")
+	:setWallText("Enable mouse grid")
