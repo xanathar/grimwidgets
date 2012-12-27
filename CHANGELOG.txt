@@ -1,0 +1,5 @@
+v0.01 
+(JKos)	- Empty dungeon created for development purposes and added base scripts to it.
+		- mod_assets/grimwidgets/grimwidgets.lua (party hooks are defined here)
+		- added gw script entity
+		- added debug script entity, with grid function.
