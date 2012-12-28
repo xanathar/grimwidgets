@@ -1,4 +1,8 @@
 v0.01 
+(Thomson) - Added events handler (gw_events script)
+          - Added new prop - gw_event (it represents a localized event in the dungeon)
+          - Added example event (you can heal and talk to a dwarf)
+
 (JKos)	- Empty dungeon created for development purposes and added base scripts to it.
 		- mod_assets/grimwidgets/grimwidgets.lua (party hooks are defined here)
 		- added gw script entity
