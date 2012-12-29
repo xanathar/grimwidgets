@@ -365,6 +365,7 @@ end\
 \
 function drawSpellBook(self,g,champion)\
 \9if champion and champion:getClass() ~= 'Mage' then\
+\9\9gw.removeElement('spell_book_runes','skills')\
 \9\9return\
 \9end\
 \9local x = spell_book.offset.x\
