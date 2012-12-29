@@ -54,18 +54,23 @@ elements = {\
 \
 function addElement(element,hookName)\
 \9hookName = hookName or 'gui'\
-   \9elements[hookName][element.id] = element\
+   \9table.insert(elements[hookName],element)\
 end\
 \
 function removeElement(id,hookName)\
 \9hookName = hookName or 'gui'\
-\9elements[hookName][id] = nil\
+\9for i,elem in ipairs(elements[hookName]) do\
+\9\9if elem.id == id then\
+\9\9\9table.remove(elements[hookName],i)\
+\9\9\9return\
+\9\9end\
+\9end\
 end\
 \
-function drawElements(g,hookName)\
+function drawElements(g,hookName,champion)\
 \9hookName = hookName or 'gui'\
 \9for id,element in pairs(elements[hookName]) do\
-\9\9element:draw(g)\
+\9\9element:draw(g,champion)\
 \9end\
 end\
 \
@@ -77,15 +82,15 @@ end\
 \
 \
 function drawInventory(g,champ)\
-\9drawElements(g,'inventory')\
+\9drawElements(g,'inventory',champ)\
 end\
 \
 function drawStats(g,champ)\
-\9drawElements(g,'stats')\
+\9drawElements(g,'stats',champ)\
 end\
 \
 function drawSkills(g,champ)\
-\9drawElements(g,'skills')\
+\9drawElements(g,'skills',champ)\
 end\
 \
 function setKeyHook(key,ptoggle,pcallback)\
@@ -100,7 +105,7 @@ function processKeyHooks(g)\
 \9\9\9\9hookDef.active = not hookDef.active\
 \9\9\9\9local t = spawn('timer',party.level,0,0,1,'keyToggleThresholdTimer')\
 \9\9\9\9t:setTimerInterval(0.3)\
-\9\9\9\9t:addConnector('activate','gui','destroyKeyToggleThresholdTimer')\
+\9\9\9\9t:addConnector('activate','gw','destroyKeyToggleThresholdTimer')\
 \9\9\9\9t:activate()\
 \9\9\9end\
 \9\9\9if hookDef.active then\
@@ -139,10 +144,10 @@ function grid(size)\
 \9\9local h = math.ceil(g.height/self.size)\
 \9\9local w = math.ceil(g.width/self.size)\
 \9\9for x = 0,w do\
-\9\9\9g.drawRect(x*size,0,1,g.height)\
+\9\9\9g.drawRect(x*self.size,0,1,g.height)\
 \9\9end\
 \9\9for y = 0,h do\
-\9\9\9g.drawRect(0,y*size,g.width,1)\
+\9\9\9g.drawRect(0,y*self.size,g.width,1)\
 \9\9end\9\9\
 \9\9g.drawText('x: '..g.mouseX..', y:'..g.mouseY,20,20)\
 \9\9g.drawText('g.width - '..g.width - g.mouseX..', g.height - '..g.height - g.mouseY,20,40)\
@@ -323,3 +328,103 @@ function showButton(ctx, x, y, width, text, callback)\
 \9\9callback(ctx)\
 \9end\
 end")
+spawn("script_entity", 29,31,2, "spell_book")
+	:setSource("-- For testing/developement purposes\
+-- I hope that this case is complex enough to show the possible flaws on grimwigets.\
+\
+spells = {}\
+offset = {\
+\9x=20,\
+\9y=20,\
+\9line_h = 20,\
+}\
+runeMap = {\
+\9A='rune1_fire',\
+\9B='rune2_death',\
+\9C='rune3_air',\
+\9D='rune4_spirituality',\
+\9E='rune5_balance',\
+\9F='rune6_physicality',\
+\9G='rune7_earth',\
+\9H='rune8_life',\
+\9I='rune9_water'\
+}\
+function activate()\
+\
+\
+end\
+\
+function setSpells(pspells)\
+\9spells = {}\
+\9i = 1\
+\9for spellName,def in pairs(pspells) do\
+\9\9table.insert(spells,i,def)\
+\9\9i = i + 1\
+\9end\
+end\
+\
+function drawSpellBook(self,g,champion)\
+\9if champion and champion:getClass() ~= 'Mage' then\
+\9\9return\
+\9end\
+\9local x = spell_book.offset.x\
+\9local y = spell_book.offset.y\
+\9\
+\9g.color(255,255,255,200)\
+\9g.drawImage(\"mod_assets/textures/book_900.tga\",x,y)\
+\9\
+\9g.font('medium')\
+\9local row = 1\
+\9for name,spell in pairs(spells) do\
+\9\9if g.button(spell.name..'_b',x,y + row * 20,300,20) then\
+\9\9\9if (spell.runes) then\
+\9\9\9\9local rune_images = {}\
+\9\9\9\9\
+\9\9\9\9for i=1,#spell.runes do\
+\9\9\9\9\9local runeChar = string.sub(spell.runes,i,i)\
+\9\9\9\9\9rune_images[i] = 'mod_assets/textures/'..runeMap[runeChar]..'.tga'\
+\9\9\9\9end\
+\9\9\9\9\
+\9\9\9\9local runes = {\
+\9\9\9\9\9id='spell_book_runes',\
+\9\9\9\9\9images = rune_images,\
+\9\9\9\9\9description = spell.description \
+\9\9\9\9}\
+\9\9\9\9runes.draw = function(self,g,champ)\
+\9\9\9\9\9g.font('small')\
+\9\9\9\9\9for i,imagePath in ipairs(self.images) do\
+\9\9\9\9\9\9g.drawImage(imagePath,500+100*i,200)\
+\9\9\9\9\9end\
+\9\9\9\9\9g.drawText(self.description,500,300)\
+\9\9\9\9end\
+\9\9\9\9gw.removeElement('spell_book_runes','skills')\
+\9\9\9\9gw.addElement(runes,'skills')\
+\9\9\9\9\
+\9\9\9end\
+\9\9\9\
+\9\9end\9\9\
+\9\9\
+\9\9g.color(237,175,135,255)\
+\9\9g.drawRect(x + 30 ,y+row*20,19,19)\
+\9\9\
+\
+\9\9g.color(250,250,250,255)\
+\9\9g.drawText(spell.uiname,x + 50, y + 20 + row*20)\
+\9\9row = row + 1\
+\9end\
+end\
+\
+-- testing\
+setSpells{\
+\9{name='fireburst',uiname='Fireburst',runes='A',description='Caster creates a quick burst of fire in front of him'},\
+\9{name='ice_shards',uiname='Ice Shards',runes='GI',description='Caster shoots a flurry of ice shards in front of him'}\
+}\
+\
+\9\
+local e = {}\
+e.id = 'spell_book_mage'\
+e.draw = spell_book.drawSpellBook\
+--gw.setKeyHook('m',true,e.draw)\
+gw.addElement(e,'skills')\
+\
+")
