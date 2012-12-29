@@ -1,10 +1,14 @@
 v0.01 
-(Thomson) - Added events handler (gw_events script)
-          - Added new prop - gw_event (it represents a localized event in the dungeon)
-          - Added example event (you can heal and talk to a dwarf)
+(JKos)		- Added spell_book script entity for developement purposes
+			- Elements are not indexed by id anymore because the rendering order of the elements was random with string indexes (pairs problem)
+			- key hooks fixed 
 
-(JKos)	- Empty dungeon created for development purposes and added base scripts to it.
-		- mod_assets/grimwidgets/grimwidgets.lua (party hooks are defined here)
-		- added gw script entity
-		- added debug script entity, with grid function.
-(Xan) 	- added small button enabling grid function
+(Thomson) 	- Added events handler (gw_events script)
+			- Added new prop - gw_event (it represents a localized event in the dungeon)
+			- Added example event (you can heal and talk to a dwarf)
+
+(JKos)		- Empty dungeon created for development purposes and added base scripts to it.
+			- mod_assets/grimwidgets/grimwidgets.lua (party hooks are defined here)
+			- added gw script entity
+			- added debug script entity, with grid function.
+(Xan) 		- added small button enabling grid function
