@@ -429,3 +429,36 @@ e.draw = spell_book.drawSpellBook\
 gw.addElement(e,'skills')\
 \
 ")
+spawn("script_entity", 21,13,2, "compass")
+	:setSource("-- This example draws a compass as a GUI element. Depending on which\
+-- activation mode is chosen, it can be visible all time, toggled\
+-- with 'c' key or shown only when 'c' is pressed.\
+\
+-- draws actual compass\
+-- this function is called when compass is visible all time\
+function drawCompass(self, g)\
+\9local x = g.width - 334\
+\9local y = 10\
+\9local dir = string.sub(\"nesw\", party.facing + 1, party.facing + 1)\
+\9g.drawImage(\"mod_assets/textures/compass-\"..dir..\".tga\", x, y)\
+end\
+\
+-- this is a simple wrapper function that is called as key press\
+-- hook. It calls drawCompass function.\
+function callback(g)\
+\9drawCompass(self, g)\
+end\
+\
+local e = {}\
+e.id = 'compass'\
+e.draw = drawCompass\
+e.callback = callback\
+\
+-- uncomment this to enabled/disable compass by pressing C\
+gw.setKeyHook('c', true, e.callback)\
+\
+-- Uncomment this to show compass by pressing C\
+-- gw.setKeyHook('c', false, e.callback)\
+\
+-- Uncomment this to have compass permanently visible\
+-- gw.addElement(e,'gui')")
