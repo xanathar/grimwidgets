@@ -2,6 +2,7 @@ v0.01
 (Thomson)       - Added compass as hooks example
 			- Compass may be permanently shown, toggled with 'c' or shown
                           only when 'c' is pressed
+			- Updated compass images to those created by Germanny (thanks!)
 (JKos)		- Added spell_book script entity for developement purposes
 			- Elements are not indexed by id anymore because the rendering order of the elements was random with string indexes (pairs problem)
 			- key hooks fixed 

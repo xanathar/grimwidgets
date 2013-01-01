@@ -437,10 +437,11 @@ spawn("script_entity", 21,13,2, "compass")
 -- draws actual compass\
 -- this function is called when compass is visible all time\
 function drawCompass(self, g)\
-\9local x = g.width - 334\
-\9local y = 10\
-\9local dir = string.sub(\"nesw\", party.facing + 1, party.facing + 1)\
-\9g.drawImage(\"mod_assets/textures/compass-\"..dir..\".tga\", x, y)\
+\9local x = 10\
+\9local y = g.height - 200\
+\9\
+\9local dir = string.sub(\"NESW\", party.facing + 1, party.facing + 1)\
+\9g.drawImage(\"mod_assets/textures/compass_full_\"..dir..\".tga\", x, y)\
 end\
 \
 -- this is a simple wrapper function that is called as key press\
