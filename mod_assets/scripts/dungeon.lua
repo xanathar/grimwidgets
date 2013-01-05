@@ -75,6 +75,7 @@ function drawElements(g,hookName,champion)\
 end\
 \
 function draw(g)\
+\
 \9processKeyHooks(g)\
 \9drawElements(g,'gui')\
 \9gw_events.processEvents(g)\
@@ -122,10 +123,94 @@ function destroyKeyToggleThresholdTimer()\
 end\
 \
 \
+--- gwElements utiltity functions\
 \
 \
+-- draws whole element, including all its children\
+function drawAll(self, ctx)\
+\9self.drawSelf(self, ctx)\
+\
+\9for key,child in pairs(self.children) do\
+\9\9child.x = child.x + self.x -- calculate proper offset\
+\9\9child.y = child.y + self.y\
+\9\9child.draw(child, ctx) -- draw child element\
+\9\9child.x = child.x - self.x -- revert back to normal coordinates\
+\9\9child.y = child.y - self.y\
+\9end\
+end\
+\
+function drawNone()\
+end\
+\
+function drawRect(self, ctx)\
+    ctx.color(self.r, self.g, self.b)\
+    ctx.drawRect(self.x, self.y, self.width, self.height)\
+end\
+\
+function addChild(parent, child)\
+\9table.insert(parent.children, child)\
+end\
+\
+function createElement(id, x, y, width, height)\
+    local elem = {}\
+    elem.id = id\
+\9elem.x = x\
+\9elem.y = y\
+\9elem.width = width\
+\9elem.height = height\
+\9elem.parent = nil\
+\9elem.children = {}\
+\9elem.drawSelf = drawNone\
+\9elem.draw = drawAll\
+\9return elem\
+end\
+\
+function createRectangle(id, x, y, width, height, r, g, b)\
+\9local elem = createElement(id, x, y, width, height)\
+\9elem.r = r\
+\9elem.g = g\
+\9elem.b = b\
+\9elem.drawSelf = drawRect\
+\9return elem\
+end\
+\
+function drawButton(self, ctx)\
+\9drawRect(self, ctx)\
+\9ctx.color(255,255,255)\
+\9ctx.drawText(self.text, self.x + 5, self.y + 13 + 5)\
+end\
+\
+function stringWidth(text)\
+\9local len = 0\
+\9for i = 1, string.len(text) do\
+\9\9local char = string.sub(text, i, i)\
+\9\9if char>='A' and char<='Z' then\
+\9\9\9len = len + 12 -- capital letters\
+\9\9elseif char>='a' and char<='z' then\
+\9\9\9len = len + 9 -- small letters\
+\9\9elseif char == ' ' then\
+\9\9\9len = len + 5 -- space\
+\9\9elseif char>='0' and char<='9' then\
+\9\9\9len = len + 9\
+\9\9elseif char>='!' and char<='/' then\
+\9\9\9len = len + 8\
+\9\9else\
+\9\9\9len = len + 10\9\9\
+\9\9end\
+\9end\
+\9return len\
+end\
+\
+function createButton(id, x, y, text, r,g,b, callback)\
+\9-- rough estimate (letters are typically 13 pixels wide)\
+\9local width = stringWidth(text)\
+\9local elem = createRectangle(id, x, y, width, 23, r, g, b)\
+\9elem.text = text\
+\9elem.drawSelf = drawButton\
+\9return elem\
+end\
 ")
-spawn("script_entity", 31,31,3, "debug")
+spawn("script_entity", 12,15,3, "debug")
 	:setSource("\
 -- draws size*size grid and shows mouse coordinates in upper left corner\
 -- you can enable it by calling debug.grid(100), disable: debug.grid() \
@@ -248,6 +333,7 @@ function processEncounter(ctx, eventScript)\
 \9if state == nil then\
 \9\9state = 1\
 \9end\
+\
 \
 \9-- Check if image is defined for this event\
 \9local image_x = eventScript.x\
@@ -429,7 +515,7 @@ e.draw = spell_book.drawSpellBook\
 gw.addElement(e,'skills')\
 \
 ")
-spawn("script_entity", 21,13,2, "compass")
+spawn("script_entity", 28,31,2, "compass")
 	:setSource("-- This example draws a compass as a GUI element. Depending on which\
 -- activation mode is chosen, it can be visible all time, toggled\
 -- with 'c' key or shown only when 'c' is pressed.\
@@ -463,3 +549,30 @@ gw.setKeyHook('c', true, e.callback)\
 \
 -- Uncomment this to have compass permanently visible\
 -- gw.addElement(e,'gui')")
+spawn("wall_button", 14,16,3, "wall_button_2")
+	:addConnector("toggle", "script_entity_1", "drawExample")
+spawn("script_entity", 12,16,2, "script_entity_1")
+	:setSource("-- This function showcases how gwElements may be stacked together\
+function drawExample()\
+\
+\9local rect1 = gw.createRectangle('rect1', 100, 50, 400, 150, 255, 255, 0)\
+\9local rect2 = gw.createRectangle('rect2', 10, 10, 50, 50, 0, 0, 255)\
+\9local rect3 = gw.createRectangle('rect3', 10, 10, 30, 30, 255, 0, 0)\
+\9local button1 = gw.createButton('button1', 70, 10, \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\", 0,255,0, nil)\
+\9local button2 = gw.createButton('button2', 70, 40, \"abcdefghijklmnopqrstuvwxyz\", 0,255,0, nil)\
+\9local button3 = gw.createButton('button3', 70, 70, \"1234567890\", 0,255,0, nil)\
+\9local button4 = gw.createButton('button4', 70, 100, \"!@#$%^&*()-,.'\", 0,255,0, nil)\
+\9gw.addChild(rect1, rect2)\
+\9gw.addChild(rect2, rect3) -- rect3 in rect2, which is in rect1\
+\9gw.addChild(rect1, button1)\
+\9gw.addChild(rect1, button2)\
+\9gw.addChild(rect1, button3)\
+\9gw.addChild(rect1, button4)\
+\
+\
+\9gw.addElement(rect1, 'gui')\
+end\
+")
+spawn("dungeon_wall_text_long", 14,16,3, "dungeon_wall_text_long_1")
+	:setWallText("Shows gwElements (several gui elements\
+that are hierarchically organized)")
