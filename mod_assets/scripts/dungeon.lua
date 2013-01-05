@@ -129,6 +129,11 @@ end\
 -- draws whole element, including all its children\
 function drawAll(self, ctx)\
 \9self.drawSelf(self, ctx)\
+\9if self.onPress then\
+\9\9if ctx.button(self.id, self.x, self.y, self.width, self.height) then\
+\9\9\9self.onPress(self)\
+\9\9end\
+\9end\
 \
 \9for key,child in pairs(self.children) do\
 \9\9child.x = child.x + self.x -- calculate proper offset\
@@ -143,12 +148,19 @@ function drawNone()\
 end\
 \
 function drawRect(self, ctx)\
-    ctx.color(self.r, self.g, self.b)\
+\9if (self.color) then\
+    \9ctx.color(self.color[1], self.color[2], self.color[3])\
+\9end\
     ctx.drawRect(self.x, self.y, self.width, self.height)\
 end\
 \
-function addChild(parent, child)\
+function addChild(parent, child,id,x,y,width,height,r,g,b)\
+\9if type(child) == 'string' then\
+\9\9child = gw['create'..child](id,x,y,width,height,r,g,b)\
+\9end \
+\
 \9table.insert(parent.children, child)\
+\9return child\
 end\
 \
 function createElement(id, x, y, width, height)\
@@ -160,9 +172,15 @@ function createElement(id, x, y, width, height)\
 \9elem.height = height\
 \9elem.parent = nil\
 \9elem.children = {}\
+\9elem.addChild = addChild\
 \9elem.drawSelf = drawNone\
 \9elem.draw = drawAll\
+\9elem.onPress = makeButton\
 \9return elem\
+end\
+\
+function makeButton(elem,callback)\9\
+\
 end\
 \
 function createRectangle(id, x, y, width, height, r, g, b)\
@@ -555,19 +573,36 @@ spawn("script_entity", 12,16,2, "script_entity_1")
 	:setSource("-- This function showcases how gwElements may be stacked together\
 function drawExample()\
 \
-\9local rect1 = gw.createRectangle('rect1', 100, 50, 400, 150, 255, 255, 0)\
-\9local rect2 = gw.createRectangle('rect2', 10, 10, 50, 50, 0, 0, 255)\
-\9local rect3 = gw.createRectangle('rect3', 10, 10, 30, 30, 255, 0, 0)\
-\9local button1 = gw.createButton('button1', 70, 10, \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\", 0,255,0, nil)\
-\9local button2 = gw.createButton('button2', 70, 40, \"abcdefghijklmnopqrstuvwxyz\", 0,255,0, nil)\
-\9local button3 = gw.createButton('button3', 70, 70, \"1234567890\", 0,255,0, nil)\
-\9local button4 = gw.createButton('button4', 70, 100, \"!@#$%^&*()-,.'\", 0,255,0, nil)\
-\9gw.addChild(rect1, rect2)\
-\9gw.addChild(rect2, rect3) -- rect3 in rect2, which is in rect1\
-\9gw.addChild(rect1, button1)\
-\9gw.addChild(rect1, button2)\
-\9gw.addChild(rect1, button3)\
-\9gw.addChild(rect1, button4)\
+\9local rect1 = gw.createRectangle('rect1', 100, 50, 400, 150)\
+\9rect1.color = {255, 255, 0}\
+\9\
+\9local button1 = gw.createButton('button1', 70, 10, \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\")\
+\9button1.color = {0,255,0}\
+\9button1.onPress = function(self) print(self.id..' clicked') end\
+\9rect1:addChild(button1)\
+\9\
+\9local button2 = gw.createButton('button2', 70, 40, \"abcdefghijklmnopqrstuvwxyz\")\
+\9button2.color = button1.color\
+\9button2.onPress = function(self) print(self.id..' clicked') end\
+\9rect1:addChild(button2)\
+\9\
+\9local button3 = gw.createButton('button3', 70, 70, \"1234567890\")\9\
+\9button3.color = button1.color\
+\9button3.onPress = function(self) print(self.id..' clicked') end\
+\9rect1:addChild(button3)\
+\9\
+\9\
+\9-- Create directly to parent example\
+\9local button4 = rect1:addChild('Button','button4', 70, 100, \"!@#$%^&*()-,.'\")\
+\9button4.color = button1.color\
+\9button4.onPress = function(self) print(self.id..' clicked') end\
+\9\
+\9rect2 = rect1:addChild('Rectangle','rect2', 10, 10, 50, 50)\
+\9rect2.color={0, 0, 255}\
+\9\
+\9local rect3 = rect2:addChild('Rectangle','rect3', 10, 10, 30, 30) -- rect3 in rect2, which is in rect1\
+\9rect3.color = {255, 0, 0}\
+\9rect3.onPress = function(self) print('rectangles can be clicked too') end\
 \
 \
 \9gw.addElement(rect1, 'gui')\
