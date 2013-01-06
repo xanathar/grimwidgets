@@ -154,9 +154,9 @@ function drawRect(self, ctx)\
     ctx.drawRect(self.x, self.y, self.width, self.height)\
 end\
 \
-function addChild(parent, child,id,x,y,width,height,r,g,b)\
+function addChild(parent, child,id,x,y,width,height)\
 \9if type(child) == 'string' then\
-\9\9child = gw['create'..child](id,x,y,width,height,r,g,b)\
+\9\9child = gw['create'..child](id,x,y,width,height)\
 \9end \
 \
 \9table.insert(parent.children, child)\
@@ -183,11 +183,8 @@ function makeButton(elem,callback)\9\
 \
 end\
 \
-function createRectangle(id, x, y, width, height, r, g, b)\
+function createRectangle(id, x, y, width, height)\
 \9local elem = createElement(id, x, y, width, height)\
-\9elem.r = r\
-\9elem.g = g\
-\9elem.b = b\
 \9elem.drawSelf = drawRect\
 \9return elem\
 end\
@@ -219,10 +216,10 @@ function stringWidth(text)\
 \9return len\
 end\
 \
-function createButton(id, x, y, text, r,g,b, callback)\
+function createButton(id, x, y, text)\
 \9-- rough estimate (letters are typically 13 pixels wide)\
 \9local width = stringWidth(text)\
-\9local elem = createRectangle(id, x, y, width, 23, r, g, b)\
+\9local elem = createRectangle(id, x, y, width, 23)\
 \9elem.text = text\
 \9elem.drawSelf = drawButton\
 \9return elem\
