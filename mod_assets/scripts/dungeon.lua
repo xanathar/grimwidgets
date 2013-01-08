@@ -129,9 +129,21 @@ end\
 -- draws whole element, including all its children\
 function drawAll(self, ctx)\
 \9self.drawSelf(self, ctx)\
-\9if self.onPress then\
-\9\9if ctx.button(self.id, self.x, self.y, self.width, self.height) then\
-\9\9\9self.onPress(self)\
+\9if (self.onPress ~= nil) and (ctx.button(self.id, self.x, self.y, self.width, self.height)) then\
+\9\9self:onPress()\
+\9end\
+\
+\9-- we manage onClick ourselves\
+\9if (ctx.mouseDown(0)) then\
+\9\9if (self.firstMousePressPoint == nil) and isPointInBox(ctx.mouseX, ctx.mouseY, self.x, self.y, self.width, self.height) then\
+\9\9\9self.firstMousePressPoint = { x = ctx.mouseX, y = ctx.mouseY }\
+\9\9end\
+\9else\
+\9\9if (self.firstMousePressPoint ~= nil) then\
+\9\9\9if (self.onClick ~= nil) and (isPointInBox(ctx.mouseX, ctx.mouseY, self.x, self.y, self.width, self.height)) then\
+\9\9\9\9self:onClick()\
+\9\9\9end\
+\9\9\9self.firstMousePressPoint = nil\
 \9\9end\
 \9end\
 \
@@ -149,10 +161,86 @@ end\
 \
 function drawRect(self, ctx)\
 \9if (self.color) then\
-    \9ctx.color(self.color[1], self.color[2], self.color[3])\
+    \9ctx.color(self.color[1], self.color[2], self.color[3], self.color[4])\
 \9end\
     ctx.drawRect(self.x, self.y, self.width, self.height)\
 end\
+\
+function rgb2yuv(rgb)\
+\9return {\
+\9\0090.299 * rgb[1] + 0.587 * rgb[2] + 0.114 * rgb[3] ,\
+\9\9-0.147 * rgb[1] - 0.289 * rgb[2] + 0.436 * rgb[3],\
+\9\0090.615 * rgb[1] - 0.515 * rgb[2] - 0.1 * rgb[3],\
+\9\9rgb[4]\
+\9}\
+end\
+\
+function normalizeColorComponent(c)\
+\9return math.max(0, math.min(255, math.floor(c + 0.5)))\
+end\
+\
+function yuv2rgb(yuv)\
+\9return {\
+\9\9normalizeColorComponent(yuv[1] + 1.402 * yuv[3]),\
+\9\9normalizeColorComponent(yuv[1] - 0.344 * yuv[2] - 0.714 * yuv[3]),\
+\9\9normalizeColorComponent(yuv[1] + 1.772 * yuv[2]),\
+\9\9yuv[4]\
+\9}\
+end\
+\
+function changeBrightness(color, factor)\
+\9local yuv = rgb2yuv(color)\
+\9yuv[1] = factor * yuv[1]\
+\9return yuv2rgb(yuv)\
+end\
+\
+function isPointInBox(px, py, bx, by, bw, bh)\
+\9return (px >= bx) and (px <= bx + bw) and (py >= by) and (py <= by + bh)\
+end\
+\
+function setColor(ctx, color)\
+\9ctx.color(color[1], color[2], color[3], color[4])\
+end\
+\
+function resetColor(ctx)\
+\9ctx.color(255, 255, 255, 255)\
+end\
+\
+\
+function drawBevel(self, ctx, protruding, fillbutton, highlight)\
+\9local color = defaultValue(self.color, {128, 128,128})\
+\9local light, dark, fill\
+\9\
+\9if (protruding) then\
+\9\9light = changeBrightness(color, 1.4)\
+\9\9dark = changeBrightness(color, 0.6)\
+\9else\
+\9\9light = changeBrightness(color, 0.6)\
+\9\9dark = changeBrightness(color, 1.4)\
+\9end\
+\9\
+\9\
+\9if (highlight) then\
+\9\9fill = changeBrightness(color, 1.2)\
+\9else\
+\9\9fill = color\
+\9end\
+\9\
+\9if (fillbutton) then\
+\9\9setColor(ctx, fill)\
+\9\9ctx.drawRect(self.x, self.y, self.width, self.height)\
+\9end\9\
+\9\
+\9setColor(ctx, light)\
+\9ctx.drawRect(self.x, self.y, self.width, 2)\
+\9ctx.drawRect(self.x, self.y, 2, self.height)\
+\
+\9setColor(ctx, dark)\
+\9ctx.drawRect(self.x, self.y + self.height - 2, self.width, 2)\
+\9ctx.drawRect(self.x + self.width - 2, self.y, 2, self.height)\
+end\
+\
+\
 \
 function addChild(parent, child,id,x,y,width,height)\
 \9if type(child) == 'string' then\
@@ -175,8 +263,18 @@ function createElement(id, x, y, width, height)\
 \9elem.addChild = addChild\
 \9elem.drawSelf = drawNone\
 \9elem.draw = drawAll\
-\9elem.onPress = makeButton\
+\9elem.onPress = nil\
+\9elem.onClick = nil\
+\9elem.firstMousePressPoint = nil\
 \9return elem\
+end\
+\
+function defaultValue(curvalue, defvalue)\
+\9if (curvalue == nil) then\
+\9\9return defvalue\
+\9else\
+\9\9return curvalue\
+\9end\
 end\
 \
 function makeButton(elem,callback)\9\
@@ -191,7 +289,17 @@ end\
 \
 function drawButton(self, ctx)\
 \9drawRect(self, ctx)\
-\9ctx.color(255,255,255)\
+\9resetColor(ctx)\
+\9ctx.drawText(self.text, self.x + 5, self.y + 13 + 5)\
+end\
+\
+function drawButton3D(self, ctx)\
+\9local hl = isPointInBox(ctx.mouseX, ctx.mouseY, self.x, self.y, self.width, self.height)\
+\9local down = ctx.mouseDown(0) and hl\
+\
+\9drawBevel(self, ctx, not down, true, hl)\
+\9\
+\9resetColor(ctx)\
 \9ctx.drawText(self.text, self.x + 5, self.y + 13 + 5)\
 end\
 \
@@ -217,13 +325,31 @@ function stringWidth(text)\
 end\
 \
 function createButton(id, x, y, text)\
-\9-- rough estimate (letters are typically 13 pixels wide)\
 \9local width = stringWidth(text)\
 \9local elem = createRectangle(id, x, y, width, 23)\
 \9elem.text = text\
 \9elem.drawSelf = drawButton\
 \9return elem\
 end\
+ \
+function createButton3D(id, x, y, text, width, height, color)\
+\9width = defaultValue(width, stringWidth(text))\
+\9height = defaultValue(height, 27)\
+\9\
+\9local elem = createRectangle(id, x, y, width, height)\
+\9elem.text = text\
+\9elem.drawSelf = drawButton3D\
+\9elem.color = defaultValue(color, { 128, 128, 128 })\
+\9return elem\
+end\
+\
+\
+\
+\
+\
+\
+\
+\
 ")
 spawn("script_entity", 12,15,3, "debug")
 	:setSource("\
@@ -573,9 +699,8 @@ function drawExample()\
 \9local rect1 = gw.createRectangle('rect1', 100, 50, 400, 150)\
 \9rect1.color = {255, 255, 0}\
 \9\
-\9local button1 = gw.createButton('button1', 70, 10, \"ABCDEFGHIJKLMNOPQRSTUVWXYZ\")\
-\9button1.color = {0,255,0}\
-\9button1.onPress = function(self) print(self.id..' clicked') end\
+\9local button1 = gw.createButton3D('button1', 70, 10, \"3D-ABCDEFGHIJKLMNOPQRSTUVWXYZ\")\
+\9button1.onClick = function(self) print(self.id..' clicked') end\
 \9rect1:addChild(button1)\
 \9\
 \9local button2 = gw.createButton('button2', 70, 40, \"abcdefghijklmnopqrstuvwxyz\")\
