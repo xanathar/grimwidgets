@@ -42,308 +42,12 @@ mapDesc([[
 spawn("starting_location", 15,15,0, "starting_location")
 spawn("torch_holder", 15,14,0, "torch_holder_1")
 	:addTorch()
-spawn("script_entity", 17,13,0, "gw")
-	:setSource("keyHooks = {}\
-elements = {\
-\9gui = {},\
-\9stats = {},\
-\9skills = {},\
-\9inventory = {}\
-}\
-\
-\
-function addElement(element,hookName)\
-\9hookName = hookName or 'gui'\
-   \9table.insert(elements[hookName],element)\
-end\
-\
-function removeElement(id,hookName)\
-\9hookName = hookName or 'gui'\
-\9for i,elem in ipairs(elements[hookName]) do\
-\9\9if elem.id == id then\
-\9\9\9table.remove(elements[hookName],i)\
-\9\9\9return\
-\9\9end\
-\9end\
-end\
-\
-function drawElements(g,hookName,champion)\
-\9hookName = hookName or 'gui'\
-\9for id,element in pairs(elements[hookName]) do\
-\9\9element:draw(g,champion)\
-\9end\
-end\
-\
-function draw(g)\
-\
-\9processKeyHooks(g)\
-\9drawElements(g,'gui')\
-\9gw_events.processEvents(g)\
-end\
-\
-\
-function drawInventory(g,champ)\
-\9drawElements(g,'inventory',champ)\
-end\
-\
-function drawStats(g,champ)\
-\9drawElements(g,'stats',champ)\
-end\
-\
-function drawSkills(g,champ)\
-\9drawElements(g,'skills',champ)\
-end\
-\
-function setKeyHook(key,ptoggle,pcallback)\
-\9keyHooks[key] = {callback=pcallback,toggle=ptoggle,active=false}\
-end\
-\
-function processKeyHooks(g)\
-\9for key,hookDef in pairs(keyHooks) do\
-\9\9if hookDef.toggle then\
-\9\9\9-- toggle key state and add small threshold so the state doesn't change immediately\
-\9\9\9if not keyToggleThresholdTimer and g.keyDown(key) then\
-\9\9\9\9hookDef.active = not hookDef.active\
-\9\9\9\9local t = spawn('timer',party.level,0,0,1,'keyToggleThresholdTimer')\
-\9\9\9\9t:setTimerInterval(0.3)\
-\9\9\9\9t:addConnector('activate','gw','destroyKeyToggleThresholdTimer')\
-\9\9\9\9t:activate()\
-\9\9\9end\
-\9\9\9if hookDef.active then\
-\9\9\9\9hookDef.callback(g)\
-\9\9\9end\9\
-\9\9elseif g.keyDown(key) then\
-\9\9\9hookDef.callback(g)\
-\9\9end\
-\9end\
-end\
-\
-function destroyKeyToggleThresholdTimer()\
-\9keyToggleThresholdTimer:destroy()\
-end\
-\
-\
---- gwElements utiltity functions\
-\
-\
--- draws whole element, including all its children\
-function drawAll(self, ctx)\
-\9self.drawSelf(self, ctx)\
-\9if (self.onPress ~= nil) and (ctx.button(self.id, self.x, self.y, self.width, self.height)) then\
-\9\9self:onPress()\
-\9end\
-\
-\9-- we manage onClick ourselves\
-\9if (ctx.mouseDown(0)) then\
-\9\9if (self.firstMousePressPoint == nil) and isPointInBox(ctx.mouseX, ctx.mouseY, self.x, self.y, self.width, self.height) then\
-\9\9\9self.firstMousePressPoint = { x = ctx.mouseX, y = ctx.mouseY }\
-\9\9end\
-\9else\
-\9\9if (self.firstMousePressPoint ~= nil) then\
-\9\9\9if (self.onClick ~= nil) and (isPointInBox(ctx.mouseX, ctx.mouseY, self.x, self.y, self.width, self.height)) then\
-\9\9\9\9self:onClick()\
-\9\9\9end\
-\9\9\9self.firstMousePressPoint = nil\
-\9\9end\
-\9end\
-\
-\9for key,child in pairs(self.children) do\
-\9\9child.x = child.x + self.x -- calculate proper offset\
-\9\9child.y = child.y + self.y\
-\9\9child.draw(child, ctx) -- draw child element\
-\9\9child.x = child.x - self.x -- revert back to normal coordinates\
-\9\9child.y = child.y - self.y\
-\9end\
-end\
-\
-function drawNone()\
-end\
-\
-function drawRect(self, ctx)\
-\9if (self.color) then\
-    \9ctx.color(self.color[1], self.color[2], self.color[3], self.color[4])\
-\9end\
-    ctx.drawRect(self.x, self.y, self.width, self.height)\
-end\
-\
-function rgb2yuv(rgb)\
-\9return {\
-\9\0090.299 * rgb[1] + 0.587 * rgb[2] + 0.114 * rgb[3] ,\
-\9\9-0.147 * rgb[1] - 0.289 * rgb[2] + 0.436 * rgb[3],\
-\9\0090.615 * rgb[1] - 0.515 * rgb[2] - 0.1 * rgb[3],\
-\9\9rgb[4]\
-\9}\
-end\
-\
-function normalizeColorComponent(c)\
-\9return math.max(0, math.min(255, math.floor(c + 0.5)))\
-end\
-\
-function yuv2rgb(yuv)\
-\9return {\
-\9\9normalizeColorComponent(yuv[1] + 1.402 * yuv[3]),\
-\9\9normalizeColorComponent(yuv[1] - 0.344 * yuv[2] - 0.714 * yuv[3]),\
-\9\9normalizeColorComponent(yuv[1] + 1.772 * yuv[2]),\
-\9\9yuv[4]\
-\9}\
-end\
-\
-function changeBrightness(color, factor)\
-\9local yuv = rgb2yuv(color)\
-\9yuv[1] = factor * yuv[1]\
-\9return yuv2rgb(yuv)\
-end\
-\
-function isPointInBox(px, py, bx, by, bw, bh)\
-\9return (px >= bx) and (px <= bx + bw) and (py >= by) and (py <= by + bh)\
-end\
-\
-function setColor(ctx, color)\
-\9ctx.color(color[1], color[2], color[3], color[4])\
-end\
-\
-function resetColor(ctx)\
-\9ctx.color(255, 255, 255, 255)\
-end\
-\
-\
-function drawBevel(self, ctx, protruding, fillbutton, highlight)\
-\9local color = defaultValue(self.color, {128, 128,128})\
-\9local light, dark, fill\
-\9\
-\9if (protruding) then\
-\9\9light = changeBrightness(color, 1.4)\
-\9\9dark = changeBrightness(color, 0.6)\
-\9else\
-\9\9light = changeBrightness(color, 0.6)\
-\9\9dark = changeBrightness(color, 1.4)\
-\9end\
-\9\
-\9\
-\9if (highlight) then\
-\9\9fill = changeBrightness(color, 1.2)\
-\9else\
-\9\9fill = color\
-\9end\
-\9\
-\9if (fillbutton) then\
-\9\9setColor(ctx, fill)\
-\9\9ctx.drawRect(self.x, self.y, self.width, self.height)\
-\9end\9\
-\9\
-\9setColor(ctx, light)\
-\9ctx.drawRect(self.x, self.y, self.width, 2)\
-\9ctx.drawRect(self.x, self.y, 2, self.height)\
-\
-\9setColor(ctx, dark)\
-\9ctx.drawRect(self.x, self.y + self.height - 2, self.width, 2)\
-\9ctx.drawRect(self.x + self.width - 2, self.y, 2, self.height)\
-end\
-\
-\
-\
-function addChild(parent, child,id,x,y,width,height)\
-\9if type(child) == 'string' then\
-\9\9child = gw['create'..child](id,x,y,width,height)\
-\9end \
-\
-\9table.insert(parent.children, child)\
-\9return child\
-end\
-\
-function createElement(id, x, y, width, height)\
-    local elem = {}\
-    elem.id = id\
-\9elem.x = x\
-\9elem.y = y\
-\9elem.width = width\
-\9elem.height = height\
-\9elem.parent = nil\
-\9elem.children = {}\
-\9elem.addChild = addChild\
-\9elem.drawSelf = drawNone\
-\9elem.draw = drawAll\
-\9elem.onPress = nil\
-\9elem.onClick = nil\
-\9elem.firstMousePressPoint = nil\
-\9return elem\
-end\
-\
-function defaultValue(curvalue, defvalue)\
-\9if (curvalue == nil) then\
-\9\9return defvalue\
-\9else\
-\9\9return curvalue\
-\9end\
-end\
-\
-function makeButton(elem,callback)\9\
-\
-end\
-\
-function createRectangle(id, x, y, width, height)\
-\9local elem = createElement(id, x, y, width, height)\
-\9elem.drawSelf = drawRect\
-\9return elem\
-end\
-\
-function drawButton(self, ctx)\
-\9drawRect(self, ctx)\
-\9resetColor(ctx)\
-\9ctx.drawText(self.text, self.x + 5, self.y + 13 + 5)\
-end\
-\
-function drawButton3D(self, ctx)\
-\9local hl = isPointInBox(ctx.mouseX, ctx.mouseY, self.x, self.y, self.width, self.height)\
-\9local down = ctx.mouseDown(0) and hl\
-\
-\9drawBevel(self, ctx, not down, true, hl)\
-\9\
-\9resetColor(ctx)\
-\9ctx.drawText(self.text, self.x + 5, self.y + 13 + 5)\
-end\
-\
-function stringWidth(text)\
-\9local len = 0\
-\9for i = 1, string.len(text) do\
-\9\9local char = string.sub(text, i, i)\
-\9\9if char>='A' and char<='Z' then\
-\9\9\9len = len + 12 -- capital letters\
-\9\9elseif char>='a' and char<='z' then\
-\9\9\9len = len + 9 -- small letters\
-\9\9elseif char == ' ' then\
-\9\9\9len = len + 5 -- space\
-\9\9elseif char>='0' and char<='9' then\
-\9\9\9len = len + 9\
-\9\9elseif char>='!' and char<='/' then\
-\9\9\9len = len + 8\
-\9\9else\
-\9\9\9len = len + 10\9\9\
-\9\9end\
-\9end\
-\9return len\
-end\
-\
-function createButton(id, x, y, text)\
-\9local width = stringWidth(text)\
-\9local elem = createRectangle(id, x, y, width, 23)\
-\9elem.text = text\
-\9elem.drawSelf = drawButton\
-\9return elem\
-end\
- \
-function createButton3D(id, x, y, text, width, height, color)\
-\9width = defaultValue(width, stringWidth(text))\
-\9height = defaultValue(height, 27)\
-\9\
-\9local elem = createRectangle(id, x, y, width, height)\
-\9elem.text = text\
-\9elem.drawSelf = drawButton3D\
-\9elem.color = defaultValue(color, { 128, 128, 128 })\
-\9return elem\
-end\
-\
-\
+spawn("script_entity", 2,0,0, "debug_gw")
+	:setSource("-- this is just a placeholder for debugging purposes\
+-- when debugging you can rename this script entity to gw and dopy paste \
+-- the script from mod_assets/grimwidgets/gw.lua here. \
+-- so the framwork will not load the script from lua file.\
+-- same works with any dynamically loaded script entity.\
 \
 \
 \
@@ -452,109 +156,6 @@ actions = {\
   { 2, \"healed\", onHealed}\
 }\
 ")
-spawn("script_entity", 19,13,1, "gw_events")
-	:setSource("-- processes events that are located in the same\
--- location as party\
-function processEvents(ctx)\
-\
-\9local items=\"\"\
-    for i in entitiesAt(party.level, party.x, party.y) do\
-\9\9if i.class == \"ScriptEntity\" then\
-\9\9\9processEncounter(ctx, i)\
-\9\9end\
-    end\
-end\
-\
-function processEncounter(ctx, eventScript)\
-\9if not sanityCheck(eventScript) then\
-\9\9return\
-\9end\
-\
-\9local state = eventScript.state\
-\9if state == nil then\
-\9\9state = 1\
-\9end\
-\
-\
-\9-- Check if image is defined for this event\
-\9local image_x = eventScript.x\
-\9local image_y = eventScript.y\
-\9if not image_x then\
-\9    image_x = 20\
-\9end\
-\9if not image_y then\
-\9\9image_y = 20\
-\9end\
-\9if eventScript.image then\
-\9   ctx.drawImage(eventScript.image, image_x, image_y)\
-\9end\
-\9\
-\9\
-\9-- Ok, now write a text\
-\9local text_x = eventScript.text_x\
-\9local text_y = eventScript.text_y\
-\9if not text_x then\
-\9\9text_x = 200\
-\9end\
-\9if not text_y then\
-\9\9text_y = 50\
-\9end\
-\9\
-\9stateData = eventScript.states[state]\
-\9ctx.color(255, 255, 255)\
-\9ctx.drawText(stateData[2], text_x, text_y)\
-\9\9\
-\9local tbl = eventScript.actions\
-\9\9\
-\9local buttons_x = eventScript.buttons_x\
-\9local buttons_y = eventScript.buttons_y\
-\9local buttons_width = eventScript.buttons_width\
-\9\9\
-\9printChoices(ctx, state, tbl, buttons_x, buttons_y, buttons_width)\
-end\
-\
-function printChoices(ctx, current_state, states, x, y, width)\
-\9for key1,value in pairs(states) do\
-\9\9if value[1] == current_state then\
-\9\9\9showButton(ctx, x, y, width, value[2], value[3])\
-\9\9\9y = y + 30\
-\9\9end\
-\9end\
-\
-end\
-\
-function sanityCheck(e)\
-\9if e.name ~= \"gw_event\" then\
-\9\9return false\
-\9end\
-    if e.states == nil then\
-\9\9return false\
-\9end\
-\9\
-\9if e.actions == nill then\
-\9\9return false\
-\9end\
-\9\
-\9if (e.enabled ~= true) then\
-\9\9return false\
-\9end\
-\9\
-\9return true\
-\
-end\
-\
-function showButton(ctx, x, y, width, text, callback)\
-    -- draw button1 with text\
-    ctx.color(128, 128, 128)\
-    ctx.drawRect(x, y, width, 20)\
-    ctx.color(255, 255, 255)\
-    ctx.drawText(text, x + 10, y + 15)\
-\9local name=\"button\"..x..y\
-\9local height = 30\
-    if ctx.button(\"button1\", x, y, width, height) then\
-\9\9callback(ctx)\
-\9end\
-end")
 spawn("script_entity", 29,31,2, "spell_book")
 	:setSource("-- For testing/developement purposes\
 -- I hope that this case is complex enough to show the possible flaws on grimwigets.\
@@ -642,19 +243,20 @@ function drawSpellBook(self,g,champion)\
 \9end\
 end\
 \
--- testing\
-setSpells{\
-\9{name='fireburst',uiname='Fireburst',runes='A',description='Caster creates a quick burst of fire in front of him'},\
-\9{name='ice_shards',uiname='Ice Shards',runes='GI',description='Caster shoots a flurry of ice shards in front of him'}\
-}\
-\
+function autoexec()\
+\9-- testing\
+\9setSpells{\
+\9\9{name='fireburst',uiname='Fireburst',runes='A',description='Caster creates a quick burst of fire in front of him'},\
+\9\9{name='ice_shards',uiname='Ice Shards',runes='GI',description='Caster shoots a flurry of ice shards in front of him'}\
+\9}\
 \9\
-local e = {}\
-e.id = 'spell_book_mage'\
-e.draw = spell_book.drawSpellBook\
---gw.setKeyHook('m',true,e.draw)\
-gw.addElement(e,'skills')\
-\
+\9\9\
+\9local e = {}\
+\9e.id = 'spell_book_mage'\
+\9e.draw = spell_book.drawSpellBook\
+\9--gw.setKeyHook('m',true,e.draw)\
+\9gw.addElement(e,'skills')\
+end\
 ")
 spawn("script_entity", 28,31,2, "compass")
 	:setSource("-- This example draws a compass as a GUI element. Depending on which\
@@ -677,19 +279,21 @@ function callback(g)\
 \9drawCompass(self, g)\
 end\
 \
-local e = {}\
-e.id = 'compass'\
-e.draw = drawCompass\
-e.callback = callback\
-\
--- uncomment this to enabled/disable compass by pressing C\
-gw.setKeyHook('c', true, e.callback)\
-\
--- Uncomment this to show compass by pressing C\
--- gw.setKeyHook('c', false, e.callback)\
-\
--- Uncomment this to have compass permanently visible\
--- gw.addElement(e,'gui')")
+function autoexec()\
+\9local e = {}\
+\9e.id = 'compass'\
+\9e.draw = drawCompass\
+\9e.callback = callback\
+\9\
+\9-- uncomment this to enabled/disable compass by pressing C\
+\9gw.setKeyHook('c', true, e.callback)\
+\9\
+\9-- Uncomment this to show compass by pressing C\
+\9-- gw.setKeyHook('c', false, e.callback)\
+\9\
+\9-- Uncomment this to have compass permanently visible\
+\9-- gw.addElement(e,'gui')\
+end")
 spawn("wall_button", 14,16,3, "wall_button_2")
 	:addConnector("toggle", "script_entity_1", "drawExample")
 spawn("script_entity", 12,16,2, "script_entity_1")
@@ -733,3 +337,10 @@ end\
 spawn("dungeon_wall_text_long", 14,16,3, "dungeon_wall_text_long_1")
 	:setWallText("Shows gwElements (several gui elements\
 that are hierarchically organized)")
+spawn("script_entity", 0,0,1, "logfw_init")
+	:setSource("spawn(\"LoGFramework\", party.level,1,1,0,'fwInit')\
+fwInit:open() \
+function main()\
+   fw.debug.enabled = false\
+   fwInit:close()\
+end")
