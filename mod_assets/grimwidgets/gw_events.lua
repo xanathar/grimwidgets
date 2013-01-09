@@ -102,3 +102,13 @@ function showButton(ctx, x, y, width, text, callback)
 	end
 end
 ]])
+
+-- This new type of objects can be easily placed in the dungeon
+-- using dungeon editor. Examples of such events are: meeting
+-- a NPC, buying/selling in a shop, discussion with arch-enemy, etc.
+cloneObject{
+	name = "gw_event",
+	baseObject = "script_entity",
+	editorIcon = 148
+
+}
