@@ -185,7 +185,7 @@ function setRelativePosition(e,positions)
 		e.y =  e.parent.height - e.height 
 	end			
 	if positions.middle then
-		e.y = ((e.parent.height - e.height) / 2)
+		e.y = math.ceil((e.parent.height - e.height) / 2)
 	end	
 end
 ]])
