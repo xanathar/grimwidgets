@@ -25,6 +25,6 @@ cloneObject{
 	   gw.drawStats(g,champ)
 	end	
 }
-
+gw_loadModule('gw_util')
 gw_loadModule('gw')
 gw_loadModule('gw_events')

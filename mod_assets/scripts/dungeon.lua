@@ -42,16 +42,12 @@ mapDesc([[
 spawn("starting_location", 15,15,0, "starting_location")
 spawn("torch_holder", 15,14,0, "torch_holder_1")
 	:addTorch()
-spawn("script_entity", 2,0,0, "debug_gw")
+spawn("script_entity", 2,0,0, "gw_debug")
 	:setSource("-- this is just a placeholder for debugging purposes\
 -- when debugging you can rename this script entity to gw and dopy paste \
 -- the script from mod_assets/grimwidgets/gw.lua here. \
 -- so the framwork will not load the script from lua file.\
 -- same works with any dynamically loaded script entity.\
-\
-\
-\
-\
 \
 \
 ")
