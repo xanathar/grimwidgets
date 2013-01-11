@@ -7,26 +7,22 @@ elements = {
 	inventory = {}
 }
 
-function draw(g)
+function _drawGUI(g)
 	_processKeyHooks(g)
 	_drawElements(g,'gui')
 	gw_events.processEvents(g)
 end
 
-function drawInventory(g,champ)
+function _drawInventory(g,champ)
 	_drawElements(g,'inventory',champ)
 end
 
-function drawStats(g,champ)
+function _drawStats(g,champ)
 	_drawElements(g,'stats',champ)
 end
 
-function drawSkills(g,champ)
+function _drawSkills(g,champ)
 	_drawElements(g,'skills',champ)
-end
-
-function setKeyHook(key,ptoggle,pcallback)
-	keyHooks[key] = {callback=pcallback,toggle=ptoggle,active=false}
 end
 
 function _drawElements(g,hookName,champion)
@@ -69,6 +65,9 @@ function _addChild(parent, child,id,x,y,width,height)
 	return child
 end
 
+function setKeyHook(key,ptoggle,pcallback)
+	keyHooks[key] = {callback=pcallback,toggle=ptoggle,active=false}
+end
 
 function addElement(element,hookName)
 	hookName = hookName or 'gui'

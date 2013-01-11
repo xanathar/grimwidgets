@@ -5,7 +5,8 @@ function processEvents(ctx)
 
 	local items=""
     for i in entitiesAt(party.level, party.x, party.y) do
-		if i.class == "ScriptEntity" then
+		if i.name == "gw_event" then
+			
 			processEncounter(ctx, i)
 		end
     end
@@ -13,8 +14,10 @@ end
 
 function processEncounter(ctx, eventScript)
 	if not sanityCheck(eventScript) then
+		help.unfreezeWorld()
 		return
 	end
+	help.freezeWorld()
 
 	local state = eventScript.state
 	if state == nil then

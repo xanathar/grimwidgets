@@ -13,16 +13,16 @@ cloneObject{
 	name='party',
 	baseObject='party',
 	onDrawGui = function(g)
-	   gw.draw(g)
+	   gw._drawGUI(g)
 	end, 
 	onDrawInventory = function(g,champ)
-	   gw.drawInventory(g,champ)
+	   gw._drawInventory(g,champ)
 	end, 
 	onDrawSkills = function(g,champ)
-	   gw.drawSkills(g,champ)
+	   gw._drawSkills(g,champ)
 	end, 
 	onDrawStats  = function(g,champ)
-	   gw.drawStats(g,champ)
+	   gw._drawStats(g,champ)
 	end	
 }
 gw_loadModule('gw_util')

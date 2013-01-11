@@ -3,6 +3,35 @@
 ]]
 fw_addModule('help',[[
 
+function freezeWorld()
+   if fw.hooksExists('monsters','fw_freezeWorld') then
+		return false
+   end
+   fw.addHooks('monsters','fw_freezeWorld',{
+         onMove = function() return false end,
+         onTurn = function() return false end,      
+         onAttack = function() return false end,
+         onRangedAttack = function() return false end,
+      },
+	  1
+   )
+   
+   fw.addHooks('party','fw_freezeWorld',{
+         onMove = function() return false end,
+         onTurn = function() return false end,      
+         onAttack = function() return false end,
+         onCastSpell = function() return false end,
+      },
+	  1
+   )
+end
+
+function unfreezeWorld()
+   fw.removeHooks('monsters','fw_freezeWorld')
+   fw.removeHooks('party','fw_freezeWorld')
+end
+
+
 -- splits string by delimeter
 -- Example: help.split('split.me.ok','.')
 function split(p,d)

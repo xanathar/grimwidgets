@@ -99,6 +99,13 @@ function setHook(hookIdString,func,ordinal)
 	fw.hooks[hookNamespace][hooksId][hookFuncName] = func
 end
 
+function hooksExists(hookNamespace,hooksId)
+	if (fw.hooks[hookNamespace] and fw.hooks[hookNamespace][hooksId]) then
+		return true
+	end
+	return false
+end
+
 
 function removeHook(hookIdString)
 	hookIdString = hookIdString or currentHook
