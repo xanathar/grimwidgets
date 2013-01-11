@@ -62,6 +62,7 @@ function _addChild(parent, child,id,x,y,width,height)
 	end 
 
 	table.insert(parent.children, child)
+	child.parent = parent
 	return child
 end
 
@@ -99,6 +100,7 @@ function createElement(id, x, y, width, height)
 	elem.onPress = nil
 	elem.onClick = nil
 	elem.firstMousePressPoint = nil
+	elem.setRelativePosition = gw_util.setRelativePosition
 	return elem
 end
 

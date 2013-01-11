@@ -39,7 +39,7 @@ mapDesc([[
 ################################
 ################################
 ]])
-spawn("starting_location", 15,15,0, "starting_location")
+spawn("starting_location", 14,16,3, "starting_location")
 spawn("torch_holder", 15,14,0, "torch_holder_1")
 	:addTorch()
 spawn("script_entity", 2,0,0, "gw_debug")
@@ -48,7 +48,6 @@ spawn("script_entity", 2,0,0, "gw_debug")
 -- the script from mod_assets/grimwidgets/gw.lua here. \
 -- so the framwork will not load the script from lua file.\
 -- same works with any dynamically loaded script entity.\
-\
 \
 ")
 spawn("script_entity", 12,15,3, "debug")
@@ -302,6 +301,7 @@ function drawExample()\
 \9local button1 = gw.createButton3D('button1', 70, 10, \"3D-ABCDEFGHIJKLMNOPQRSTUVWXYZ\")\
 \9button1.onClick = function(self) print(self.id..' clicked') end\
 \9rect1:addChild(button1)\
+\9button1:setRelativePosition({'right','top'})\
 \9\
 \9local button2 = gw.createButton('button2', 70, 40, \"abcdefghijklmnopqrstuvwxyz\")\
 \9button2.color = button1.color\
@@ -319,10 +319,12 @@ function drawExample()\
 \9button4.color = button1.color\
 \9button4.onPress = function(self) print(self.id..' clicked') end\
 \9\
-\9rect2 = rect1:addChild('Rectangle','rect2', 10, 10, 50, 50)\
+\9rect2 = rect1:addChild('Rectangle','rect2', 0, 0, 50, 50)\
 \9rect2.color={0, 0, 255}\
+\9rect2:setRelativePosition({'left','top'})\
 \9\
-\9local rect3 = rect2:addChild('Rectangle','rect3', 10, 10, 30, 30) -- rect3 in rect2, which is in rect1\
+\9local rect3 = rect2:addChild('Rectangle','rect3', 0, 0, 30, 30) -- rect3 in rect2, which is in rect1\
+\9rect3:setRelativePosition({'middle','center'})\
 \9rect3.color = {255, 0, 0}\
 \9rect3.onPress = function(self) print('rectangles can be clicked too') end\
 \

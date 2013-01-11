@@ -159,5 +159,33 @@ function resetColor(ctx)
 	ctx.color(255, 255, 255, 255)
 end
 
-
+-- sets elements relative position to parent
+-- positions can be a string or table
+-- possible values: top,middle,bottom,left,center,right
+-- example 
+function setRelativePosition(e,positions)
+	if not e.parent then return false end
+	if type(positions) == 'string' then
+		positions = {positions}
+	end
+	positions = help.tableToSet(positions)
+	if positions.center then
+		e.x = math.ceil((e.parent.width - e.width) / 2) 
+	end
+	if positions.left then
+		e.x = 0
+	end	
+	if positions.right then
+		e.x = e.parent.width - e.width 
+	end		
+	if positions.top then
+		e.y = 0
+	end
+	if positions.bottom then
+		e.y =  e.parent.height - e.height 
+	end			
+	if positions.middle then
+		e.y = ((e.parent.height - e.height) / 2)
+	end	
+end
 ]])
