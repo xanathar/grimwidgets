@@ -25,6 +25,13 @@ cloneObject{
 	   gw._drawStats(g,champ)
 	end	
 }
-gw_loadModule('gw_util')
 gw_loadModule('gw')
+gw_loadModule('gw_util')
+gw_loadModule('gw_element')
+gw_loadModule('gw_rectangle')
+gw_loadModule('gw_button3D')
+gw_loadModule('gw_button')
 gw_loadModule('gw_events')
+gw_loadModule('gw_string')
+
+

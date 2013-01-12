@@ -43,12 +43,13 @@ spawn("starting_location", 14,16,3, "starting_location")
 spawn("torch_holder", 15,14,0, "torch_holder_1")
 	:addTorch()
 spawn("script_entity", 2,0,0, "gw_debug")
-	:setSource("-- this is just a placeholder for debugging purposes\
--- when debugging you can rename this script entity to gw and dopy paste \
+	:setSource("-- this is just a placeholder for debugging purposes.\
+-- When debugging a script entity you can rename this script entity to gw and copy paste \
 -- the script from mod_assets/grimwidgets/gw.lua here. \
 -- so the framwork will not load the script from lua file.\
--- same works with any dynamically loaded script entity.\
-\
+-- Same works with any dynamically loaded script entity.\
+-- Problem with the dynamically loaded script enetites is that you can't see any errors in editor they might cause\
+-- so you have to copy paste them to dungeon for debugging.\
 ")
 spawn("script_entity", 12,15,3, "debug")
 	:setSource("\
@@ -295,40 +296,46 @@ spawn("script_entity", 12,16,2, "script_entity_1")
 	:setSource("-- This function showcases how gwElements may be stacked together\
 function drawExample()\
 \
-\9local rect1 = gw.createRectangle('rect1', 100, 50, 400, 150)\
+\9local rect1 = gw_rectangle.create('rect1', 100, 50, 400, 300)\
 \9rect1.color = {255, 255, 0}\
+\9gw.addElement(rect1, 'gui')\
 \9\
-\9local button1 = gw.createButton3D('button1', 70, 10, \"3D-ABCDEFGHIJKLMNOPQRSTUVWXYZ\")\
+\9local button1 = gw_button3D.create('button1', 70, 10, \"3D-ABCDEFGHIJKLMNOPQRSTUVWXYZ\")\
+\9\
 \9button1.onClick = function(self) print(self.id..' clicked') end\
 \9rect1:addChild(button1)\
 \9button1:setRelativePosition({'right','top'})\
 \9\
-\9local button2 = gw.createButton('button2', 70, 40, \"abcdefghijklmnopqrstuvwxyz\")\
+\9local button2 = gw_button.create('button2', 70, 40, \"abcdefghijklmnopqrstuvwxyz\")\
 \9button2.color = button1.color\
 \9button2.onPress = function(self) print(self.id..' clicked') end\
 \9rect1:addChild(button2)\
+\
 \9\
-\9local button3 = gw.createButton('button3', 70, 70, \"1234567890\")\9\
+\9local button3 = gw_button.create('button3', 70, 70, \"1234567890\")\9\
 \9button3.color = button1.color\
 \9button3.onPress = function(self) print(self.id..' clicked') end\
 \9rect1:addChild(button3)\
 \9\
-\9\
+\
 \9-- Create directly to parent example\
-\9local button4 = rect1:addChild('Button','button4', 70, 100, \"!@#$%^&*()-,.'\")\
+\9local button4 = rect1:addChild('button','button4', 70, 100, \"!@#$%^&*()-,.'\")\
 \9button4.color = button1.color\
 \9button4.onPress = function(self) print(self.id..' clicked') end\
 \9\
-\9rect2 = rect1:addChild('Rectangle','rect2', 0, 0, 50, 50)\
+\9rect2 = rect1:addChild('rectangle','rect2', 0, 0, 50, 50)\
 \9rect2.color={0, 0, 255}\
 \9rect2:setRelativePosition({'left','top'})\
 \9\
-\9local rect3 = rect2:addChild('Rectangle','rect3', 0, 0, 30, 30) -- rect3 in rect2, which is in rect1\
+\9local rect3 = rect2:addChild('rectangle','rect3', 0, 0, 30, 30) -- rect3 in rect2, which is in rect1\
 \9rect3:setRelativePosition({'middle','center'})\
 \9rect3.color = {255, 0, 0}\
 \9rect3.onPress = function(self) print('rectangles can be clicked too') end\
 \
-\
+\9local text1 = rect1:addChild('rectangle','text1',0,0,200,100)\
+\9text1:setRelativePosition({'bottom','center'})\9\
+\9text1.text = \"Long text should be wrapped automatically. Does it work?\"\
+\9text1.color = {255,255,255}\
 \9gw.addElement(rect1, 'gui')\
 end\
 ")

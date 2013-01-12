@@ -1,4 +1,5 @@
 fw_addModule('gw',[[
+
 keyHooks = {}
 elements = {
 	gui = {},
@@ -56,15 +57,6 @@ function _destroyKeyToggleThresholdTimer()
 	keyToggleThresholdTimer:destroy()
 end
 
-function _addChild(parent, child,id,x,y,width,height)
-	if type(child) == 'string' then
-		child = gw['create'..child](id,x,y,width,height)
-	end 
-
-	table.insert(parent.children, child)
-	child.parent = parent
-	return child
-end
 
 function setKeyHook(key,ptoggle,pcallback)
 	keyHooks[key] = {callback=pcallback,toggle=ptoggle,active=false}
@@ -84,48 +76,12 @@ function removeElement(id,hookName)
 		end
 	end
 end
-
-function createElement(id, x, y, width, height)
-    local elem = {}
-    elem.id = id
-	elem.x = x
-	elem.y = y
-	elem.width = width
-	elem.height = height
-	elem.parent = nil
-	elem.children = {}
-	elem.addChild = _addChild
-	elem.drawSelf = gw_util.drawNone
-	elem.draw = gw_util.drawAll
-	elem.onPress = nil
-	elem.onClick = nil
-	elem.firstMousePressPoint = nil
-	elem.setRelativePosition = gw_util.setRelativePosition
-	return elem
-end
-
-function createRectangle(id, x, y, width, height)
-	local elem = createElement(id, x, y, width, height)
-	elem.drawSelf = gw_util.drawRect
-	return elem
-end
-
-function createButton(id, x, y, text)
-	local width = gw_util.stringWidth(text)
-	local elem = createRectangle(id, x, y, width, 23)
-	elem.text = text
-	elem.drawSelf = gw_util.drawButton
-	return elem
-end
- 
-function createButton3D(id, x, y, text, width, height, color)
-	width = gw_util.defaultValue(width, gw_util.stringWidth(text))
-	height = gw_util.defaultValue(height, 27)
-	
-	local elem = createRectangle(id, x, y, width, height)
-	elem.text = text
-	elem.drawSelf = gw_util.drawButton3D
-	elem.color = gw_util.defaultValue(color, { 128, 128, 128 })
-	return elem
+-- general element factory method
+function create(elementType,id,arg1,arg2,arg3,arg4,arg5,arg6)
+	local elementFactory = findEntity('gw_'..elementType)
+	if (not elementFactory or elementFactory.create == nil) then
+		print('Invalid grimwidgets element type: '..elementType)
+	end
+	return elementFactory.create(id,arg1,arg2,arg3,arg4,arg5,arg6)
 end
 ]])
