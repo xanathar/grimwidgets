@@ -6,6 +6,8 @@ function create(id, x, y, width, height)
     elem.id = id
 	elem.x = x
 	elem.y = y
+	elem.marginLeft=0
+	elem.marginTop=0
 	elem.width = width
 	elem.height = height
 	elem.parent = nil
@@ -17,6 +19,9 @@ function create(id, x, y, width, height)
 	elem.onClick = nil
 	elem.firstMousePressPoint = nil
 	elem.setRelativePosition = _setRelativePosition
+	elem.getChild = _getChild
+	elem.moveAfter = _moveAfter
+	elem.moveBelow = _moveBelow
 	return elem
 end
 
@@ -46,11 +51,11 @@ function _drawAll(self, ctx)
 	end
 
 	for key,child in pairs(self.children) do
-		child.x = child.x + self.x -- calculate proper offset
-		child.y = child.y + self.y
+		child.x = child.x + self.x + child.marginLeft -- calculate proper offset
+		child.y = child.y + self.y + child.marginTop
 		child.draw(child, ctx) -- draw child element
-		child.x = child.x - self.x -- revert back to normal coordinates
-		child.y = child.y - self.y
+		child.x = child.x - self.x - child.marginLeft -- revert back to normal coordinates
+		child.y = child.y - self.y - child.marginTop
 	end
 end
 
@@ -64,15 +69,47 @@ function _addChild(parent, child,id,x,y,width,height)
 	return child
 end
 
--- sets elements relative position to parent
+function _getChild(self,id)
+	for _,child in ipairs(self.children) do
+		if child.id == id then
+			return child
+		end
+	end
+end
+
+-- sets element's relative position to parent
 -- positions can be a string or table
 -- possible values: top,middle,bottom,left,center,right
 -- example 
 function _setRelativePosition(e,positions)
-	if not e.parent then return false end
+	if e.parent == nil then
+		print("Cant's set relative position to element without a parent")
+		return
+	end
 	if type(positions) == 'string' then
 		positions = {positions}
 	end
+	if (positions[1] == 'after') then
+		local elementId = positions[2]
+		local elem = e.parent:getChild(elementId)
+		if not elem then
+			print('Child element '..elementId..' not found')
+			return
+		end
+		e:moveAfter(elem)
+		return
+	end
+	if (positions[1] == 'below') then
+		local elementId = positions[2]
+		local elem = e.parent:getChild(elementId)
+		if not elem then
+			print('Child element '..elementId..' not found')
+			return
+		end
+		e:moveBelow(elem)
+		return
+	end	
+	
 	positions = help.tableToSet(positions)
 	if positions.center then
 		e.x = math.ceil((e.parent.width - e.width) / 2) 
@@ -92,6 +129,17 @@ function _setRelativePosition(e,positions)
 	if positions.middle then
 		e.y = math.ceil((e.parent.height - e.height) / 2)
 	end	
+	
+end
+
+function _moveAfter(self,elem)
+		self.x = elem.x + elem.width
+		self.y = elem.y
+end
+
+function _moveBelow(self,elem)
+		self.x = elem.x 
+		self.y = elem.y + elem.height
 end
 ]])
 

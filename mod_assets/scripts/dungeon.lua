@@ -44,12 +44,14 @@ spawn("torch_holder", 15,14,0, "torch_holder_1")
 	:addTorch()
 spawn("script_entity", 2,0,0, "gw_debug")
 	:setSource("-- this is just a placeholder for debugging purposes.\
--- When debugging a script entity you can rename this script entity to gw and copy paste \
--- the script from mod_assets/grimwidgets/gw.lua here. \
--- so the framwork will not load the script from lua file.\
--- Same works with any dynamically loaded script entity.\
+-- When debugging a script entity you can rename this script entity for example to gw and copy paste \
+-- the script entity part from mod_assets/grimwidgets/gw.lua here. \
+-- so the framwork will not load the script from that lua file.\
+-- Same works with any dynamically loaded script entities.\
 -- Problem with the dynamically loaded script enetites is that you can't see any errors in editor they might cause\
 -- so you have to copy paste them to dungeon for debugging.\
+\
+\
 ")
 spawn("script_entity", 12,15,3, "debug")
 	:setSource("\
@@ -322,18 +324,31 @@ function drawExample()\
 \9local button4 = rect1:addChild('button','button4', 70, 100, \"!@#$%^&*()-,.'\")\
 \9button4.color = button1.color\
 \9button4.onPress = function(self) print(self.id..' clicked') end\
+\
+\9local button5 = rect1:addChild('button','button5', 70, 100, \"After element position\")\
+\9button5.color = button1.color\
+\9button5:setRelativePosition({'after','button4'})\
+\9button5.marginLeft = 10\
+\9\
+\9local button6 = rect1:addChild('button','button6', 70, 100, \"Below element position\")\
+\9button6:setRelativePosition{'below','button5'}\
+\9button6.marginLeft = 10\
+\9button6.marginTop = 15\
 \9\
 \9rect2 = rect1:addChild('rectangle','rect2', 0, 0, 50, 50)\
 \9rect2.color={0, 0, 255}\
-\9rect2:setRelativePosition({'left','top'})\
+\9rect2:setRelativePosition{'left','top'}\
 \9\
 \9local rect3 = rect2:addChild('rectangle','rect3', 0, 0, 30, 30) -- rect3 in rect2, which is in rect1\
-\9rect3:setRelativePosition({'middle','center'})\
+\9rect3:setRelativePosition{'middle','center'}\
+\9rect3.marginTop = 5\
+\9rect3.marginLeft = 10\
 \9rect3.color = {255, 0, 0}\
 \9rect3.onPress = function(self) print('rectangles can be clicked too') end\
 \
 \9local text1 = rect1:addChild('rectangle','text1',0,0,200,100)\
-\9text1:setRelativePosition({'bottom','center'})\9\
+\9text1:setRelativePosition{'bottom','center'}\
+\9\
 \9text1.text = \"Long text should be wrapped automatically. Does it work?\"\
 \9text1.color = {255,255,255}\
 \9gw.addElement(rect1, 'gui')\
