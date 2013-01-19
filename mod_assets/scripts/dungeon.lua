@@ -96,17 +96,9 @@ enabled = true\
 \
 -- name of the imeage to show\
 image = \"mod_assets/images/example-image.dds\"\
+image_width = 177\
+image_hieght = 180\
 \
--- todo: the following x,y coords are temporary.\
---       They should be calculated automatically.\
-\
--- image position\
-image_x = 40\
-image_y = 60\
-\
--- text description position\
-text_x = 220\
-text_y = 60\
 \
 -- buttons position\
 buttons_x = 220\
@@ -298,9 +290,14 @@ spawn("script_entity", 12,16,2, "script_entity_1")
 	:setSource("-- This function showcases how gwElements may be stacked together\
 function drawExample()\
 \
-\9local rect1 = gw_rectangle.create('rect1', 100, 50, 400, 300)\
+\9local rect1 = gw_rectangle.create('rect1', 100, 50, 600, 300)\
 \9rect1.color = {255, 255, 0}\
 \9gw.addElement(rect1, 'gui')\
+\9\
+\9-- Example of image within \
+\9local img1 = gw_image.create('image1', 600, 50, 177, 190, 'mod_assets/images/example-image.dds')\
+\9rect1:addChild(img1)\
+\9img1:setRelativePosition({'right','bottom'})\
 \9\
 \9local button1 = gw_button3D.create('button1', 70, 10, \"3D-ABCDEFGHIJKLMNOPQRSTUVWXYZ\")\
 \9\
@@ -318,7 +315,7 @@ function drawExample()\
 \9button3.color = button1.color\
 \9button3.onPress = function(self) print(self.id..' clicked') end\
 \9rect1:addChild(button3)\
-\9\
+\9\9\
 \
 \9-- Create directly to parent example\
 \9local button4 = rect1:addChild('button','button4', 70, 100, \"!@#$%^&*()-,.'\")\
