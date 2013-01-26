@@ -58,7 +58,11 @@ function wrap(text,width)
 			lines[line] = ''
 			len = stringWidth(word)
 		end
-		lines[line] = lines[line]..' '..word
+                if string.len(lines[line]) > 0 then
+		    lines[line] = lines[line]..' '..word
+                else
+                    lines[line] = word
+                end
 	end
 	return lines
 end
@@ -70,9 +74,15 @@ function drawLines(ctx,lines,x,y,lineHeight)
 end
 
 function drawElementText(elem,ctx)
-	if not elem.text then return false end
-	local lines = gw_string.wrap(elem.text,elem.width)
-	gw_string.drawLines(ctx,lines,elem.x + 5, elem.y + 13 + 5,20)
+    if not elem.text then 
+        return false 
+    end
+    if elem.dontwrap == nil or elem.dontwrap == false then
+        local lines = gw_string.wrap(elem.text, elem.width)
+        gw_string.drawLines(ctx, lines, elem.x + 5, elem.y + 13 + 5,20)
+    else
+        ctx.drawText(elem.text, elem.x + 5, elem.y + 13 + 5, 20)
+    end
 end
 
 ]])
