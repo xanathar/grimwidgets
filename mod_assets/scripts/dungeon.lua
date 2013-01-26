@@ -186,6 +186,10 @@ function drawSpellBook(self,g,champion)\
 \9\9gw.removeElement('spell_book_runes','skills')\
 \9\9return\
 \9end\
+\9\
+\9local runeLocations = {}\
+\9\
+\9\
 \9local x = spell_book.offset.x\
 \9local y = spell_book.offset.y\
 \9\
@@ -290,6 +294,9 @@ spawn("script_entity", 12,16,2, "script_entity_1")
 	:setSource("-- This function showcases how gwElements may be stacked together\
 function drawExample()\
 \
+\9gw.setDefaultColor({200,200,200,255})\
+\9gw.setDefaultTextColor({255,255,255,255})\
+\
 \9local rect1 = gw_rectangle.create('rect1', 100, 50, 600, 300)\
 \9rect1.color = {255, 255, 0}\
 \9gw.addElement(rect1, 'gui')\
@@ -300,13 +307,13 @@ function drawExample()\
 \9img1:setRelativePosition({'right','bottom'})\
 \9\
 \9local button1 = gw_button3D.create('button1', 70, 10, \"3D-ABCDEFGHIJKLMNOPQRSTUVWXYZ\")\
+\9button1.textColor = {200,100,0}\
 \9\
 \9button1.onClick = function(self) print(self.id..' clicked') end\
 \9rect1:addChild(button1)\
 \9button1:setRelativePosition({'right','top'})\
 \9\
 \9local button2 = gw_button.create('button2', 70, 40, \"abcdefghijklmnopqrstuvwxyz\")\
-\9button2.color = button1.color\
 \9button2.onPress = function(self) print(self.id..' clicked') end\
 \9rect1:addChild(button2)\
 \
@@ -343,11 +350,13 @@ function drawExample()\
 \9rect3.color = {255, 0, 0}\
 \9rect3.onPress = function(self) print('rectangles can be clicked too') end\
 \
-\9local text1 = rect1:addChild('rectangle','text1',0,0,200,100)\
+\9local text1 = rect1:addChild('text','text1',0,0,200,100)\
 \9text1:setRelativePosition{'bottom','center'}\
 \9\
 \9text1.text = \"Long text should be wrapped automatically. Does it work?\"\
 \9text1.color = {255,255,255}\
+\9\
+\9\
 \9gw.addElement(rect1, 'gui')\
 end\
 ")
@@ -364,3 +373,11 @@ end")
 spawn("dungeon_door_portcullis", 17,16,3, "dungeon_door_portcullis_1")
 spawn("dungeon_door_portcullis", 17,15,3, "dungeon_door_portcullis_2")
 spawn("snail", 18,15,0, "snail_1")
+spawn("script_entity", 31,0,3, "gw_text")
+	:setSource("\
+function create(id, x, y, width, height, text)\
+\9local elem = gw_element.create(id, x, y, width, height)\
+\9elem.text = text\
+\9elem.drawSelf = function() end\
+\9return elem\
+end")

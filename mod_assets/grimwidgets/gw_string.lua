@@ -71,6 +71,9 @@ end
 
 function drawElementText(elem,ctx)
 	if not elem.text then return false end
+	if elem.textColor then
+		gw_util.setColor(ctx,elem.textColor)
+	end
 	local lines = gw_string.wrap(elem.text,elem.width)
 	gw_string.drawLines(ctx,lines,elem.x + 5, elem.y + 13 + 5,20)
 end

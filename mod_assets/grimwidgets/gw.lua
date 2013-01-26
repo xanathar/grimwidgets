@@ -7,6 +7,8 @@ elements = {
 	skills = {},
 	inventory = {}
 }
+defaultColor = {255,255,255,255}
+defaultTextColor = {255,255,255,255}
 
 function _drawGUI(g)
 	_processKeyHooks(g)
@@ -84,4 +86,21 @@ function create(elementType,id,arg1,arg2,arg3,arg4,arg5,arg6)
 	end
 	return elementFactory.create(id,arg1,arg2,arg3,arg4,arg5,arg6)
 end
+
+function setDefaultColor(color)
+	defaultColor = color
+end
+
+function getDefaultColor()
+	return defaultColor
+end
+
+function setDefaultTextColor(color)
+	defaultTextColor = color
+end
+
+function getDefaultTextColor()
+	return defaultTextColor
+end
+
 ]])

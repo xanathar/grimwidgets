@@ -79,6 +79,7 @@ function setColor(ctx, color)
 end
 
 function resetColor(ctx)
-	ctx.color(255, 255, 255, 255)
+	color = gw.getDefaultColor()
+	ctx.color(color[1], color[2], color[3], color[4])
 end
 ]])

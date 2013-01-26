@@ -22,6 +22,8 @@ function create(id, x, y, width, height)
 	elem.getChild = _getChild
 	elem.moveAfter = _moveAfter
 	elem.moveBelow = _moveBelow
+	elem.color = gw.getDefaultColor()
+	elem.textColor = gw.getDefaultTextColor()
 	return elem
 end
 
@@ -30,6 +32,9 @@ end
 
 -- draws whole element, including all its children
 function _drawAll(self, ctx)
+	if (self.color) then
+    	ctx.color(self.color[1], self.color[2], self.color[3], self.color[4])
+	end
 	self.drawSelf(self, ctx)
 	if (self.onPress ~= nil) and (ctx.button(self.id, self.x, self.y, self.width, self.height)) then
 		self:onPress()
