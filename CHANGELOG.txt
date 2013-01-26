@@ -1,4 +1,13 @@
 v0.01
+(JKos)		- Added gw_text (just a plain text without any parent element)
+			- Added gw_element:getAncestor() which returns the 1st parent of the element in hierarchy or self if parent is not defined
+			- Added gw_element:deactivate(),gw_element:activate() methods and gw_element.active property
+				so it's now possible to close the parent gui element by calling self:getAncestor():deactivate() 
+			- Added gw.setDefaultColor(color) and gw.setDefaultTextColor(color) which can be used to set the default pen color when drawing widgets and text
+			- Added gw_element.textColor property which defines the color of text inside of the element
+
+(Thomson)       - Added gwImage
+                - Fixed bug in text wrapping (no extra space at the beginning of the text)
 (Thomson)	- Added gwElements: rectangle, button
 		- Added rectangles and buttons example
 (Thomson)       - Added compass as hooks example
@@ -6,7 +15,8 @@ v0.01
                           only when 'c' is pressed
 			- Updated compass images to those created by Germanny (thanks!)
 (JKos)		- Added spell_book script entity for developement purposes
-			- Elements are not indexed by id anymore because the rendering order of the elements was random with string indexes (pairs problem)
+			- Elements are not indexed by id anymore because the rendering order 
+                          of the elements was random with string indexes (pairs problem)
 			- key hooks fixed 
 (Thomson) 	- Added events handler (gw_events script)
 			- Added new prop - gw_event (it represents a localized event in the dungeon)

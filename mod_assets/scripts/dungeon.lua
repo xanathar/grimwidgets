@@ -289,20 +289,21 @@ function autoexec()\
 \9-- gw.addElement(e,'gui')\
 end")
 spawn("wall_button", 14,16,3, "wall_button_2")
-	:addConnector("toggle", "script_entity_1", "drawExample")
-spawn("script_entity", 12,16,2, "script_entity_1")
+	:addConnector("toggle", "gui_demo", "drawExample")
+spawn("script_entity", 12,16,2, "gui_demo")
 	:setSource("-- This function showcases how gwElements may be stacked together\
 function drawExample()\
 \
 \9gw.setDefaultColor({200,200,200,255})\
 \9gw.setDefaultTextColor({255,255,255,255})\
 \
+\9-- background yellow image\
 \9local rect1 = gw_rectangle.create('rect1', 100, 50, 600, 300)\
 \9rect1.color = {255, 255, 0}\
 \9gw.addElement(rect1, 'gui')\
 \9\
 \9-- Example of image within \
-\9local img1 = gw_image.create('image1', 600, 50, 177, 190, 'mod_assets/images/example-image.dds')\
+\9local img1 = gw_image.create('image1', 0, 0, 177, 190, 'mod_assets/images/example-image.dds')\
 \9rect1:addChild(img1)\
 \9img1:setRelativePosition({'right','bottom'})\
 \9\
@@ -311,7 +312,7 @@ function drawExample()\
 \9\
 \9button1.onClick = function(self) print(self.id..' clicked') end\
 \9rect1:addChild(button1)\
-\9button1:setRelativePosition({'right','top'})\
+\9button1:setRelativePosition({'left','bottom'})\
 \9\
 \9local button2 = gw_button.create('button2', 70, 40, \"abcdefghijklmnopqrstuvwxyz\")\
 \9button2.onPress = function(self) print(self.id..' clicked') end\
@@ -348,13 +349,21 @@ function drawExample()\
 \9rect3.marginTop = 5\
 \9rect3.marginLeft = 10\
 \9rect3.color = {255, 0, 0}\
-\9rect3.onPress = function(self) print('rectangles can be clicked too') end\
+\9rect3.onPress = function(self) \
+\9\9print('rectangles can be clicked too')\
+\9end\
 \
 \9local text1 = rect1:addChild('text','text1',0,0,200,100)\
 \9text1:setRelativePosition{'bottom','center'}\
 \9\
 \9text1.text = \"Long text should be wrapped automatically. Does it work?\"\
-\9text1.color = {255,255,255}\
+\9text1.textColor = {0,255,255}\
+\9\
+\9local closeButton = rect1:addChild('button3D','close_rect_1',20,20,'X',30,20)\
+\9closeButton.onPress = function(self)\
+\9\9self:getAncestor():deactivate()\
+\9end\
+\9closeButton:setRelativePosition({'top','right'})\
 \9\
 \9\
 \9gw.addElement(rect1, 'gui')\
@@ -373,11 +382,125 @@ end")
 spawn("dungeon_door_portcullis", 17,16,3, "dungeon_door_portcullis_1")
 spawn("dungeon_door_portcullis", 17,15,3, "dungeon_door_portcullis_2")
 spawn("snail", 18,15,0, "snail_1")
-spawn("script_entity", 31,0,3, "gw_text")
-	:setSource("\
-function create(id, x, y, width, height, text)\
-\9local elem = gw_element.create(id, x, y, width, height)\
-\9elem.text = text\
-\9elem.drawSelf = function() end\
-\9return elem\
+spawn("wall_button", 14,14,3, "wall_button_3")
+	:addConnector("toggle", "new_champion", "newChampion")
+spawn("dungeon_wall_text", 14,14,3, "dungeon_wall_text_2")
+	:setWallText("Use this button to get someone new\
+in your party! The more the merrier!")
+spawn("script_entity", 12,14,2, "new_champion")
+	:setSource("function newChampion()\
+\9newguy = {\
+\9\9name = \"Rookie\",    -- just a name\
+\9\9race = \"Insectoid\", -- Must be one of: Human, Minotaur, Lizardman, Insectoid\
+\9\9class = \"Fighter\",  -- Must be one of: Figther, Rogue, Mage or Ranger\
+\9\9sex = \"male\", \9\9-- Must be one of: male, female\
+\9\9level = 3\
+\9}\
+\9\
+\9addChampion(newguy)\
+\
+end\
+\
+function addChampion(newguy)\
+\
+\9-- background border\
+\9local dialog = gw_rectangle.create('dialog', 100, 50, 660, 280)\
+\9dialog.color = {128, 128, 128, 200}\
+\9gw.addElement(dialog, 'gui')\
+\
+\9local text1 = dialog:addChild('rectangle','text1', 10, 10, 640, 50)\
+\9\
+\9text1.text = newguy.name .. \" would like to join your party, but since there is already four of you\"\
+\9\9..\", someone else would have to go. Please pick who you want to leave behind:\"\
+\9text1.color = {255,255,255}\
+\9dialog:addChild(text1)\
+\
+\9for i=1,4 do\9\
+\9\9local info = showChampion(i, party:getChampion(i))\
+\9\9dialog:addChild(info)\
+\9\9info.x = 10 + (i-1)*130\
+\9\9info.y = 70\
+\9\9info.onPress = function(self) chosen(i, newguy) end\
+\
+\9\9-- we could use info:setRelativePosition({'after','info'..(i-1)}) here,\
+\9\9-- but that would make the rectangles to touch each other without any\
+\9\9-- borders or margins\
+\9end\
+\9\
+\9local info = showCandidate(newguy)\
+\9dialog:addChild(info)\
+\9info.x = 10 + 4*130\
+\9info.y = 70\
+\9info.onPress = function(self) chosen(5, newguy) end\
+\
+end\
+\
+function chosen(id, newguy)\
+\9print(\"Chosen \"..id)\
+\9\
+\9-- someone from the old party has to go\
+\9if (id >= 1 and id <= 4) then\
+\9\9setNewChampion(id, newguy)\
+\9end\
+\9\
+\9-- the new guy has to go\
+\9if (id == 5) then\
+\9\9local tmp\
+\9\9if newguy.sex == \"male\" then\
+\9\9\9tmp = \"him\"\
+\9\9else\
+\9\9\9tmp = \"her\"\
+\9\9end\
+\9\9hudPrint(newguy.name .. \" turns back and goes away. You never seen \"..tmp..\" again.\")\
+        gw.removeElement('dialog', 'gui')\
+\9end\
+end\
+\
+function setNewChampion(id, newguy)\
+\9\
+\9local x = party:getChampion(id)\
+\9local old_name = x:getName()\
+\9x:setName(newguy.name)\
+\9x:setRace(newguy.race)\
+\9x:setClass(newguy.class)\
+\9x:setSex(newguy.sex)\
+\9x:setEnabled(true)\
+\9\
+\9\
+\9hudPrint(newguy.name..\" joins your party. \"..old_name.. \" will be remembered as a good fellow.\")\
+\9gw.removeElement('dialog', 'gui')\
+\
+end\
+\
+function showChampion(id, champion)\
+\9local info = gw_rectangle.create(\"info\"..id, 0, 0, 120, 200)\
+\9info.color = {255,255,255}\
+\9info.text = champion:getName()\
+\9\
+\9local details = gw_rectangle.create(\"details\"..id, 0, 50, 120, 150)\
+\9details.color = { 192, 192, 255, 255}\
+\9info:addChild(details)\
+\9details.text = champion:getRace() .. \"\\n\" \
+\9            .. champion:getClass() .. \"\\n\"\
+\9            .. champion:getSex() .. \"\\n\"\
+\9\9\9\9.. champion:getLevel() .. \" level\"\
+\9details.dontwrap = true\
+\9            \9\
+\9return info\
+end\
+\
+function showCandidate(champion)\
+\9local info = gw_rectangle.create(\"info5\", 0, 0, 120, 200)\
+\9info.color = {230, 255, 230}\
+\9info.text = champion.name\
+\9\
+\9local details = gw_rectangle.create(\"details5\", 0, 50, 120, 150)\
+\9details.color = { 192, 192, 255, 255}\
+\9info:addChild(details)\
+\9details.text = champion.race .. \"\\n\" \
+\9            .. champion.class .. \"\\n\"\
+\9            .. champion.sex .. \"\\n\"\
+\9\9\9\9.. champion.level .. \" level\"\
+\9details.dontwrap = true\
+\9return info\
 end")

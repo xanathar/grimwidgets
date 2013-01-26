@@ -24,14 +24,35 @@ function create(id, x, y, width, height)
 	elem.moveBelow = _moveBelow
 	elem.color = gw.getDefaultColor()
 	elem.textColor = gw.getDefaultTextColor()
+	elem.getAncestor = _getAncestor
+	elem.deactivate = _deactivate
+	elem.activate = _activate
+	elem.active = true
 	return elem
 end
 
 function drawNone()
 end
 
+function _deactivate(self)
+	self.active = false
+end
+
+function _activate(self)
+	self.active = true
+end
+
+-- returns the 1st parent in hierarchy or self if parent is not defined
+function _getAncestor(self)
+	if type(self.parent) == 'table' then
+		return self.parent:getAncestor()
+	end
+	return self
+end
+
 -- draws whole element, including all its children
 function _drawAll(self, ctx)
+	if not self.active then return end
 	if (self.color) then
     	ctx.color(self.color[1], self.color[2], self.color[3], self.color[4])
 	end

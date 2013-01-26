@@ -2,21 +2,19 @@ fw_addModule('gw_events',[[
 -- processes events that are located in the same
 -- location as party
 function processEvents(ctx)
-
-	local items=""
+    local items=""
     for i in entitiesAt(party.level, party.x, party.y) do
-		if i.name == "gw_event" then
-			
-			processEncounter(ctx, i)
-		end
+        if i.name == "gw_event" then
+            processEncounter(ctx, i)
+	end
     end
 end
 
 function processEncounter(ctx, eventScript)
-	if not sanityCheck(eventScript) then
-		help.unfreezeWorld()
-		return
-	end
+    if not sanityCheck(eventScript) then
+        help.unfreezeWorld()
+        return
+    end
 	help.freezeWorld()
 
 	local state = eventScript.state
@@ -24,34 +22,53 @@ function processEncounter(ctx, eventScript)
 		state = 1
 	end
 
+	-- get width and height of the event box, use defaults if necessary
+        local bg_width = eventScript.width
+	local bg_height = eventScript.height
+	if not bg_width then
+	   bg_width = 600
+	end
+	if not bg_height then
+	   bg_height = 400
+	end
+
+	-- we don't want to keep adding 60 boxes per seconds
+	gw.removeElement("bg")
+
+	-- It's not possible to use relative position for root element, 
+	-- so let's calculate center of the screen
+	local bg = gw_rectangle.create('bg', (ctx.width - bg_width)/2, 
+				       (ctx.height - bg_height)/2, bg_width, bg_height)
+	bg.color = {128, 128, 128, 192} -- use gray semi-transpartent background
 
 	-- Check if image is defined for this event
-	local image_x = eventScript.x
-	local image_y = eventScript.y
-	if not image_x then
-	    image_x = 20
-	end
-	if not image_y then
-		image_y = 20
-	end
+	local image_width = 0
+	local image_height = 0
 	if eventScript.image then
-	   ctx.drawImage(eventScript.image, image_x, image_y)
+	   image_width = eventScript.image_width
+	   image_height = eventScript.image_height
+	   if not image_width then
+	      image_width = 120
+	   end
+	   if not image_height then
+	      image_height = 120
+	   end
+
+	   local img = gw_image.create('img1', 0, 0, image_width, image_height, "mod_assets/images/example-image.dds")
+	   bg:addChild(img)
+	   img:setRelativePosition({'top','right'})
 	end
-	
-	
+		
 	-- Ok, now write a text
-	local text_x = eventScript.text_x
-	local text_y = eventScript.text_y
-	if not text_x then
-		text_x = 200
-	end
-	if not text_y then
-		text_y = 50
-	end
-	
 	stateData = eventScript.states[state]
-	ctx.color(255, 255, 255)
-	ctx.drawText(stateData[2], text_x, text_y)
+
+	local txt_width = bg_width - image_width
+	local txt_height = 200
+
+	local text1 = bg:addChild('rectangle','text1',0,0, txt_width, txt_height)
+	text1:setRelativePosition{'top','left'}
+	text1.color = {255, 255, 255}
+	text1.text = stateData[2]
 		
 	local tbl = eventScript.actions
 		
@@ -60,6 +77,8 @@ function processEncounter(ctx, eventScript)
 	local buttons_width = eventScript.buttons_width
 		
 	printChoices(ctx, state, tbl, buttons_x, buttons_y, buttons_width)
+
+	gw.addElement(bg, 'gui')
 end
 
 function printChoices(ctx, current_state, states, x, y, width)

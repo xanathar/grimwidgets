@@ -33,6 +33,8 @@ gw_loadModule('gw_button3D')
 gw_loadModule('gw_image')
 gw_loadModule('gw_button')
 gw_loadModule('gw_events')
+gw_loadModule('gw_text')
 gw_loadModule('gw_string')
+
 
 
