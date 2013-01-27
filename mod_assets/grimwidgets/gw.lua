@@ -66,6 +66,7 @@ end
 
 function addElement(element,hookName)
 	hookName = hookName or 'gui'
+	removeElement(element.id,hookName)
    	table.insert(elements[hookName],element)
 end
 
@@ -80,9 +81,14 @@ function removeElement(id,hookName)
 end
 -- general element factory method
 function create(elementType,id,arg1,arg2,arg3,arg4,arg5,arg6)
+	if type(elementType) ~= 'string' then
+		print('Element type must be string')
+		return false
+	end
 	local elementFactory = findEntity('gw_'..elementType)
 	if (not elementFactory or elementFactory.create == nil) then
 		print('Invalid grimwidgets element type: '..elementType)
+		return false
 	end
 	return elementFactory.create(id,arg1,arg2,arg3,arg4,arg5,arg6)
 end

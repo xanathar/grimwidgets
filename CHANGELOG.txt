@@ -1,4 +1,8 @@
 v0.01
+(JKos)		- Added gw_element.onDraw hook. If the hook returns false the element won't be drawn.
+			- Bug fix: margins didn't not work correctly with position after and below,element_id
+			- Added new relative positions: after_previous and below_previous. Element will be placed automatically after or below the previously added sibling.
+				example: elem:setRelativePosition('below_previous')
 (JKos)		- Added gw_text (just a plain text without any parent element)
 		- Added gw_element:getAncestor() which returns the 1st parent of the element in hierarchy or self if parent is not defined
 		- Added gw_element:deactivate(),gw_element:activate() methods and gw_element.active property

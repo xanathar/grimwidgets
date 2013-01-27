@@ -31,7 +31,7 @@ function create(id, x, y, width, height)
 	return elem
 end
 
-function drawNone()
+function _drawNone()
 end
 
 function _deactivate(self)
@@ -51,11 +51,22 @@ function _getAncestor(self)
 end
 
 -- draws whole element, including all its children
-function _drawAll(self, ctx)
+function _drawAll(self, ctx,champion)
 	if not self.active then return end
 	if (self.color) then
     	ctx.color(self.color[1], self.color[2], self.color[3], self.color[4])
 	end
+	if self.onDraw and self:onDraw(ctx,champion) == false then
+		return
+	end	
+	if self.parent then
+		self.x = self.x + self.parent.x
+		self.y = self.y + self.parent.y 
+	end
+	self.x = self.x + self.marginLeft
+	self.y = self.y + self.marginTop
+
+	
 	self.drawSelf(self, ctx)
 	if (self.onPress ~= nil) and (ctx.button(self.id, self.x, self.y, self.width, self.height)) then
 		self:onPress()
@@ -77,17 +88,24 @@ function _drawAll(self, ctx)
 	end
 
 	for key,child in pairs(self.children) do
-		child.x = child.x + self.x + child.marginLeft -- calculate proper offset
-		child.y = child.y + self.y + child.marginTop
-		child.draw(child, ctx) -- draw child element
-		child.x = child.x - self.x - child.marginLeft -- revert back to normal coordinates
-		child.y = child.y - self.y - child.marginTop
+		child:draw(ctx) -- draw child element
 	end
+	
+	if self.parent then
+		self.x = self.x - self.parent.x
+		self.y = self.y - self.parent.y 
+	end
+	self.x = self.x - self.marginLeft
+	self.y = self.y - self.marginTop	
 end
 
-function _addChild(parent, child,id,x,y,width,height)
+function _addChild(parent, child,id,x,y,width,height,p1,p2,p3)
+	if type(parent) ~= 'table' then
+		print('Invalid parent, use elem:addChild() instead of elem.addChild')
+		return {}
+	end 
 	if type(child) == 'string' then
-		child = gw.create(child,id,x,y,width,height)
+		child = gw.create(child,id,x,y,width,height,p1,p2,p3)
 	end 
 
 	table.insert(parent.children, child)
@@ -102,6 +120,7 @@ function _getChild(self,id)
 		end
 	end
 end
+
 
 -- sets element's relative position to parent
 -- positions can be a string or table
@@ -125,6 +144,14 @@ function _setRelativePosition(e,positions)
 		e:moveAfter(elem)
 		return
 	end
+	if (positions[1] == 'after_previous') then
+		local elem = e.parent.children[#e.parent.children - 1]
+		if not elem then
+			return
+		end
+		e:moveAfter(elem)
+		return
+	end			
 	if (positions[1] == 'below') then
 		local elementId = positions[2]
 		local elem = e.parent:getChild(elementId)
@@ -135,6 +162,14 @@ function _setRelativePosition(e,positions)
 		e:moveBelow(elem)
 		return
 	end	
+	if (positions[1] == 'below_previous') then
+		local elem = e.parent.children[#e.parent.children - 1]
+		if not elem then
+			return
+		end
+		e:moveBelow(elem)
+		return
+	end		
 	
 	positions = help.tableToSet(positions)
 	if positions.center then
@@ -159,13 +194,14 @@ function _setRelativePosition(e,positions)
 end
 
 function _moveAfter(self,elem)
-		self.x = elem.x + elem.width
+		self.x = elem.x + elem.width + elem.marginLeft
 		self.y = elem.y
 end
 
 function _moveBelow(self,elem)
 		self.x = elem.x 
-		self.y = elem.y + elem.height
+		self.y = elem.y + elem.height + elem.marginTop
 end
+
 ]])
 

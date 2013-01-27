@@ -156,20 +156,37 @@ offset = {\
 \9y=20,\
 \9line_h = 20,\
 }\
-runeMap = {\
-\9A='rune1_fire',\
-\9B='rune2_death',\
-\9C='rune3_air',\
-\9D='rune4_spirituality',\
-\9E='rune5_balance',\
-\9F='rune6_physicality',\
-\9G='rune7_earth',\
-\9H='rune8_life',\
-\9I='rune9_water'\
-}\
-function activate()\
 \
 \
+function getRuneImage(runeChar)\
+\9local runeMap = {\
+\9\9A='rune1_fire',\
+\9\9B='rune2_death',\
+\9\9C='rune3_air',\
+\9\9D='rune4_spirituality',\
+\9\9E='rune5_balance',\
+\9\9F='rune6_physicality',\
+\9\9G='rune7_earth',\
+\9\9H='rune8_life',\
+\9\9I='rune9_water'\
+\9}\
+\
+\9return 'mod_assets/textures/'..runeMap[runeChar]..'.tga'\
+end\
+\
+function getRunePosition(runeChar)\
+\9local  positions = {\
+\9\9A = {1,1},\
+\9\9B = {1,2},\
+\9\9C = {1,3},\
+\9\9D = {2,1},\
+\9\9E = {2,2},\
+\9\9F = {2,3},\
+\9\9G = {3,1},\
+\9\9H = {3,2},\
+\9\9I = {3,3}\9\9\9\9\9\9\
+\9}\
+\9return positions[runeChar]\
 end\
 \
 function setSpells(pspells)\
@@ -181,60 +198,55 @@ function setSpells(pspells)\
 \9end\
 end\
 \
-function drawSpellBook(self,g,champion)\
-\9if champion and champion:getClass() ~= 'Mage' then\
-\9\9gw.removeElement('spell_book_runes','skills')\
-\9\9return\
+function createSpellBook()\
+\9local book = gw_image.create('spell_book',20,20,900,800,'mod_assets/textures/book_900.tga')\
+\9book.onDraw = function(self,ctx,champion) \
+\9\9if champion and champion:getClass() ~= 'Mage' then\
+\9\9\9return false\
+\9\9end\9\9\
 \9end\
 \9\
-\9local runeLocations = {}\
+\9for _,spell in ipairs(spells) do\
+\9\9local p = book:addChild(createSpellParagraf(spell))\
+\9\9p:setRelativePosition('below_previous')\
+\9end\
 \9\
+\9return book\
+\
+end\
+\
+function createSpellParagraf(spell)\
+\9local p = gw_rectangle.create(spell.name,0,0,200,30)\
+\9p.marginTop = 10\
+\9p.marginLeft = 20\
+\9p.color = {0,0,0,0}\
+\9p:addChild('button3D',spell.name..'_memo',0,0,'Memorize')\
+\9local text = p:addChild('text',spell.name..'_text',0,0,300,20,spell.uiname)\
+\9text.marginLeft = 10\
+\9text:setRelativePosition('after_previous')\
 \9\
-\9local x = spell_book.offset.x\
-\9local y = spell_book.offset.y\
+\9text.spell = spell\
 \9\
-\9g.color(255,255,255,200)\
-\9g.drawImage(\"mod_assets/textures/book_900.tga\",x,y)\
-\9\
-\9g.font('medium')\
-\9local row = 1\
-\9for name,spell in pairs(spells) do\
-\9\9if g.button(spell.name..'_b',x,y + row * 20,300,20) then\
-\9\9\9if (spell.runes) then\
-\9\9\9\9local rune_images = {}\
-\9\9\9\9\
+\9text.onClick = function(self,ctx)\
+\9\9\9if (self.spell.runes) then\
+\9\9\9\9local runes = gw_rectangle.create('spell_book_runes',500,100,350,400)\
+\9\9\9\9runes.color = {0,0,0,100}\
 \9\9\9\9for i=1,#spell.runes do\
 \9\9\9\9\9local runeChar = string.sub(spell.runes,i,i)\
-\9\9\9\9\9rune_images[i] = 'mod_assets/textures/'..runeMap[runeChar]..'.tga'\
-\9\9\9\9end\
-\9\9\9\9\
-\9\9\9\9local runes = {\
-\9\9\9\9\9id='spell_book_runes',\
-\9\9\9\9\9images = rune_images,\
-\9\9\9\9\9description = spell.description \
-\9\9\9\9}\
-\9\9\9\9runes.draw = function(self,g,champ)\
-\9\9\9\9\9g.font('small')\
-\9\9\9\9\9for i,imagePath in ipairs(self.images) do\
-\9\9\9\9\9\9g.drawImage(imagePath,500+100*i,200)\
-\9\9\9\9\9end\
-\9\9\9\9\9g.drawText(self.description,500,300)\
-\9\9\9\9end\
+\9\9\9\9\9local runeImg = runes:addChild('image','rune_'..runeChar,0,0,100,100,spell_book.getRuneImage(runeChar))\
+\9\9\9\9\9local pos = spell_book.getRunePosition(runeChar)\
+\9\9\9\9\9runeImg.x = pos[1] * 80 - 80\
+\9\9\9\9\9runeImg.y = pos[2] * 80 - 80\
+\9\9\9\9end\9\9\
+\9\9\9\9local t = runes:addChild('text','rune_text',0,0,300,200,spell.description)\
+\9\9\9\9t:setRelativePosition{'bottom','center'}\
 \9\9\9\9gw.removeElement('spell_book_runes','skills')\
 \9\9\9\9gw.addElement(runes,'skills')\
 \9\9\9\9\
-\9\9\9end\
-\9\9\9\
-\9\9end\9\9\
-\9\9\
-\9\9g.color(237,175,135,255)\
-\9\9g.drawRect(x + 30 ,y+row*20,19,19)\
-\9\9\
-\
-\9\9g.color(250,250,250,255)\
-\9\9g.drawText(spell.uiname,x + 50, y + 20 + row*20)\
-\9\9row = row + 1\
+\9\9\9end\9\9\
 \9end\
+\9return p\
+\9\
 end\
 \
 function autoexec()\
@@ -245,11 +257,8 @@ function autoexec()\
 \9}\
 \9\
 \9\9\
-\9local e = {}\
-\9e.id = 'spell_book_mage'\
-\9e.draw = spell_book.drawSpellBook\
-\9--gw.setKeyHook('m',true,e.draw)\
-\9gw.addElement(e,'skills')\
+\9local book = spell_book.createSpellBook()\
+\9gw.addElement(book,'skills')\
 end\
 ")
 spawn("script_entity", 28,31,2, "compass")
@@ -340,6 +349,11 @@ function drawExample()\
 \9button6.marginLeft = 10\
 \9button6.marginTop = 15\
 \9\
+\9local button7 = rect1:addChild('button','button7', 70, 100, \"After button5\")\
+\9button7.color = button1.color\
+\9button7:setRelativePosition({'after','button5'})\
+\9button7.marginLeft = 10\9\
+\9\
 \9rect2 = rect1:addChild('rectangle','rect2', 0, 0, 50, 50)\
 \9rect2.color={0, 0, 255}\
 \9rect2:setRelativePosition{'left','top'}\
@@ -367,6 +381,8 @@ function drawExample()\
 \9\
 \9\
 \9gw.addElement(rect1, 'gui')\
+\9\
+\9\
 end\
 ")
 spawn("dungeon_wall_text_long", 14,16,3, "dungeon_wall_text_long_1")
@@ -504,3 +520,23 @@ function showCandidate(champion)\
 \9details.dontwrap = true\
 \9return info\
 end")
+spawn("script_entity", 26,31,3, "book")
+	:setSource("function create(id,x,y)\
+\
+end\
+\
+function addPage()\
+\
+end\
+\
+function getPage()\
+\
+end\
+\
+function createPage()\
+\9local page = {}\
+\9\
+end\
+")
+spawn("script_entity", 17,28,3, "gw_element")
+	:setSource("")
