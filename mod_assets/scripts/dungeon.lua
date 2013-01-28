@@ -538,5 +538,3 @@ function createPage()\
 \9\
 end\
 ")
-spawn("script_entity", 17,28,3, "gw_element")
-	:setSource("")
