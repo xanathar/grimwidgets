@@ -24,6 +24,7 @@ function create(id, x, y, width, height)
 	elem.moveBelow = _moveBelow
 	elem.color = gw.getDefaultColor()
 	elem.textColor = gw.getDefaultTextColor()
+	elem.textSize = 'small'
 	elem.getAncestor = _getAncestor
 	elem.deactivate = _deactivate
 	elem.activate = _activate

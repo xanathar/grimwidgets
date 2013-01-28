@@ -1,6 +1,12 @@
 fw_addModule('gw_string',[[
-function stringWidth(text)
+function stringWidth(text,size)
+	size = size or 'small'
 	local len = 0
+	
+	local fontSizes = {tiny=-1,small=0,medium=1,large=3}
+	local fontSizeModifier = fontSizes[size]
+	local charModifiers = {M=5,m=6,i=-4,j=-5}
+	
 	for i = 1, string.len(text) do
 		local char = string.sub(text, i, i)
 		if char>='A' and char<='Z' then
@@ -15,6 +21,11 @@ function stringWidth(text)
 			len = len + 8
 		else
 			len = len + 10		
+		end
+		
+		len = len + fontSizeModifier
+		if charModifiers[char] then
+			len = len + charModifiers[char]
 		end
 	end
 	return len
@@ -46,23 +57,23 @@ function split(str, delim, maxNb)
     return result
 end
 
-function wrap(text,width)
+function wrap(text,width,size)
 	local words = split(text,' ')
 	local lines = {''}
 	local len = 0
 	local line = 1
 	for i,word in ipairs(words) do
-		len = len + stringWidth(word)
+		len = len + stringWidth(word,size)
 		if len > width then
 			line = line + 1
 			lines[line] = ''
-			len = stringWidth(word)
+			len = stringWidth(word,size)
 		end
-                if string.len(lines[line]) > 0 then
+        if string.len(lines[line]) > 0 then
 		    lines[line] = lines[line]..' '..word
-                else
-                    lines[line] = word
-                end
+		else
+			lines[line] = word
+		end
 	end
 	return lines
 end
@@ -75,11 +86,12 @@ end
 
 function drawElementText(elem,ctx)
 	if not elem.text then return false end
+	ctx.font(elem.textSize)
 	if elem.textColor then
 		gw_util.setColor(ctx,elem.textColor)
 	end
     if elem.dontwrap == nil or elem.dontwrap == false then
-        local lines = gw_string.wrap(elem.text, elem.width)
+        local lines = gw_string.wrap(elem.text, elem.width,elem.textSize)
         gw_string.drawLines(ctx, lines, elem.x + 5, elem.y + 13 + 5,20)
     else
         ctx.drawText(elem.text, elem.x + 5, elem.y + 13 + 5, 20)

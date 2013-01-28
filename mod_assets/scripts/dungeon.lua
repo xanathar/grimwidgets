@@ -151,12 +151,6 @@ spawn("script_entity", 29,31,2, "spell_book")
 -- I hope that this case is complex enough to show the possible flaws on grimwigets.\
 \
 spells = {}\
-offset = {\
-\9x=20,\
-\9y=20,\
-\9line_h = 20,\
-}\
-\
 \
 function getRuneImage(runeChar)\
 \9local runeMap = {\
@@ -177,13 +171,13 @@ end\
 function getRunePosition(runeChar)\
 \9local  positions = {\
 \9\9A = {1,1},\
-\9\9B = {1,2},\
-\9\9C = {1,3},\
-\9\9D = {2,1},\
+\9\9B = {2,1},\
+\9\9C = {3,1},\
+\9\9D = {1,2},\
 \9\9E = {2,2},\
-\9\9F = {2,3},\
-\9\9G = {3,1},\
-\9\9H = {3,2},\
+\9\9F = {3,2},\
+\9\9G = {1,3},\
+\9\9H = {2,3},\
 \9\9I = {3,3}\9\9\9\9\9\9\
 \9}\
 \9return positions[runeChar]\
@@ -220,7 +214,7 @@ function createSpellParagraf(spell)\
 \9p.marginTop = 10\
 \9p.marginLeft = 20\
 \9p.color = {0,0,0,0}\
-\9p:addChild('button3D',spell.name..'_memo',0,0,'Memorize')\
+\9p:addChild('button',spell.name..'_memo',0,0,'Memorize')\
 \9local text = p:addChild('text',spell.name..'_text',0,0,300,20,spell.uiname)\
 \9text.marginLeft = 10\
 \9text:setRelativePosition('after_previous')\
@@ -229,19 +223,29 @@ function createSpellParagraf(spell)\
 \9\
 \9text.onClick = function(self,ctx)\
 \9\9\9if (self.spell.runes) then\
-\9\9\9\9local runes = gw_rectangle.create('spell_book_runes',500,100,350,400)\
-\9\9\9\9runes.color = {0,0,0,100}\
-\9\9\9\9for i=1,#spell.runes do\
-\9\9\9\9\9local runeChar = string.sub(spell.runes,i,i)\
+\9\9\9\9local page = gw_rectangle.create('spell_book_page',490,80,350,500)\
+\9\9\9\9page.color = {0,0,0,0}\
+\9\9\9\9local runes = gw_rectangle.create('spell_book_runes',0,0,240,240)\
+\9\9\9\9runes.color = {0,0,0,0}\
+\9\9\9\9page:addChild(runes)\
+\9\9\9\9runes:setRelativePosition{'top','center'}\
+\9\9\9\9\
+\9\9\9\9\
+\9\9\9\9for _,runeChar in ipairs({'A','B','C','D','E','F','G','H','I'}) do\
+\9\9\9\9\9\
 \9\9\9\9\9local runeImg = runes:addChild('image','rune_'..runeChar,0,0,100,100,spell_book.getRuneImage(runeChar))\
 \9\9\9\9\9local pos = spell_book.getRunePosition(runeChar)\
 \9\9\9\9\9runeImg.x = pos[1] * 80 - 80\
 \9\9\9\9\9runeImg.y = pos[2] * 80 - 80\
+\9\9\9\9\9if not string.find(self.spell.runes,runeChar) then\
+\9\9\9\9\9\9runeImg.color = {100,100,100,150}\
+\9\9\9\9\9end\
 \9\9\9\9end\9\9\
-\9\9\9\9local t = runes:addChild('text','rune_text',0,0,300,200,spell.description)\
-\9\9\9\9t:setRelativePosition{'bottom','center'}\
-\9\9\9\9gw.removeElement('spell_book_runes','skills')\
-\9\9\9\9gw.addElement(runes,'skills')\
+\9\9\9\9local t = page:addChild('text','spell_text',0,250,350,200,spell.description)\
+\9\9\9\9t.textColor = {100,100,100,200}\
+\9\9\9\9t.textSize = 'large'\
+\9\9\9\9gw.removeElement('spell_book_page','skills')\
+\9\9\9\9gw.addElement(page,'skills')\
 \9\9\9\9\
 \9\9\9end\9\9\
 \9end\
@@ -251,9 +255,14 @@ end\
 \
 function autoexec()\
 \9-- testing\
+\9local testDescription = [[This is a testing spell definition.Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin iaculis pretium velit,\
+commodo molestie augue adipiscing ac. In hac habitasse platea dictumst.\
+Maecenas massa diam, accumsan sed mattis in, volutpat non elit. Maecenas ut ullamcorper nisi.]]\
+\9\
 \9setSpells{\
 \9\9{name='fireburst',uiname='Fireburst',runes='A',description='Caster creates a quick burst of fire in front of him'},\
-\9\9{name='ice_shards',uiname='Ice Shards',runes='GI',description='Caster shoots a flurry of ice shards in front of him'}\
+\9\9{name='ice_shards',uiname='Ice Shards',runes='GI',description='Caster shoots a flurry of ice shards in front of him'},\
+\9\9{name='all_runes',uiname='test runes',runes='ABCDEFGHI',description=testDescription}\
 \9}\
 \9\
 \9\9\
