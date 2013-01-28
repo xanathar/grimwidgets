@@ -520,23 +520,3 @@ function showCandidate(champion)\
 \9details.dontwrap = true\
 \9return info\
 end")
-spawn("script_entity", 26,31,3, "book")
-	:setSource("function create(id,x,y)\
-\
-end\
-\
-function addPage()\
-\
-end\
-\
-function getPage()\
-\
-end\
-\
-function createPage()\
-\9local page = {}\
-\9\
-end\
-")
-spawn("script_entity", 17,28,3, "gw_element")
-	:setSource("")
