@@ -472,6 +472,17 @@ function chosen(id, newguy)\
 \9end\
 end\
 \
+function dropAllItems(champion)\
+\9for slot=1,31 do\
+\9\9local item = champion:getItem(slot)\
+\9\9if item then\
+\9\9\9local saveditem = grimq.saveItem(item)\
+\9\9\9champion:removeItem(slot)\
+\9\9\9grimq.loadItem(saveditem, party.level, party.x, party.y, party.facing, saveditem.id)\9\9\9\
+\9\9end\9\
+\9end\
+end\
+\
 function setNewChampion(id, newguy)\
 \9\
 \9local x = party:getChampion(id)\
@@ -482,6 +493,7 @@ function setNewChampion(id, newguy)\
 \9x:setSex(newguy.sex)\
 \9x:setEnabled(true)\
 \9\
+\9dropAllItems(x)\
 \9\
 \9hudPrint(newguy.name..\" joins your party. \"..old_name.. \" will be remembered as a good fellow.\")\
 \9gw.removeElement('dialog', 'gui')\
@@ -520,3 +532,7 @@ function showCandidate(champion)\
 \9details.dontwrap = true\
 \9return info\
 end")
+spawn("lightning_rod", 14,14,3, "lightning_rod_1")
+spawn("sack", 15,15,3, "sack_1")
+spawn("rock", 15,15,1, "rock_1")
+spawn("rock", 15,15,0, "rock_2")
