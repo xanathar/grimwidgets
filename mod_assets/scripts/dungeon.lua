@@ -421,6 +421,15 @@ end\
 \
 function addChampion(newguy)\
 \
+\9-- first let's check if there is empty slot\
+\9for i=1,4 do\
+\9\9if not party:getChampion(i):getEnabled() then\
+\9\9\9chosen(i, newguy)\
+\9\9\9return\
+\9\9end\
+\9end\
+\
+\
 \9-- background border\
 \9local dialog = gw_rectangle.create('dialog', 100, 50, 660, 280)\
 \9dialog.color = {128, 128, 128, 200}\
@@ -489,6 +498,7 @@ function setNewChampion(id, newguy)\
 \9\
 \9local x = party:getChampion(id)\
 \9local old_name = x:getName()\
+\9local empty_slot = x:getEnabled()\
 \9x:setName(newguy.name)\
 \9x:setRace(newguy.race)\
 \9x:setClass(newguy.class)\
@@ -540,4 +550,4 @@ spawn("rock", 15,15,1, "rock_1")
 spawn("rock", 15,15,0, "rock_2")
 spawn("lever", 14,15,3, "lever_1")
 	:addConnector("activate", "debug", "debugGrid")
-	:addConnector("deactivate", "debug", "grid")
+	:addConnector("deactivate", "debug", "disableGrid")
