@@ -85,9 +85,11 @@ end\
 \
 function debugGrid()\
 \9grid(100)\
+end\
+\
+function disableGrid()\
+\9grid()\
 end")
-spawn("wall_button", 14,15,3, "wall_button_1")
-	:addConnector("toggle", "debug", "debugGrid")
 spawn("dungeon_wall_text", 14,15,3, "dungeon_wall_text_1")
 	:setWallText("Enable mouse grid")
 spawn("gw_event", 16,16,2, "gw_event_1")
@@ -536,3 +538,6 @@ spawn("lightning_rod", 14,14,3, "lightning_rod_1")
 spawn("sack", 15,15,3, "sack_1")
 spawn("rock", 15,15,1, "rock_1")
 spawn("rock", 15,15,0, "rock_2")
+spawn("lever", 14,15,3, "lever_1")
+	:addConnector("activate", "debug", "debugGrid")
+	:addConnector("deactivate", "debug", "grid")
