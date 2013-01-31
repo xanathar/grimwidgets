@@ -412,7 +412,8 @@ spawn("script_entity", 12,14,2, "new_champion")
 \9\9race = \"Insectoid\", -- Must be one of: Human, Minotaur, Lizardman, Insectoid\
 \9\9class = \"Fighter\",  -- Must be one of: Figther, Rogue, Mage or Ranger\
 \9\9sex = \"male\", \9\9-- Must be one of: male, female\
-\9\9level = 3\
+\9\9level = 3,\
+\9\9portrait = \"mod_assets/textures/portraits/taghor.dds\" -- must be 128x128 dds file\
 \9}\
 \9\
 \9addChampion(newguy)\
@@ -504,6 +505,7 @@ function setNewChampion(id, newguy)\
 \9x:setClass(newguy.class)\
 \9x:setSex(newguy.sex)\
 \9x:setEnabled(true)\
+\9x:setPortrait(newguy.portrait)\
 \9\
 \9dropAllItems(x)\
 \9\
