@@ -408,16 +408,20 @@ in your party! The more the merrier!")
 spawn("script_entity", 12,14,2, "new_champion")
 	:setSource("function newChampion()\
 \9newguy = {\
-\9\9name = \"Rookie\",    -- just a name\
+\9\9name = \"Taghor\",    -- just a name\
 \9\9race = \"Insectoid\", -- Must be one of: Human, Minotaur, Lizardman, Insectoid\
-\9\9class = \"Fighter\",  -- Must be one of: Figther, Rogue, Mage or Ranger\
+\9\9class = \"Mage\",  -- Must be one of: Figther, Rogue, Mage or Ranger\
 \9\9sex = \"male\", \9\9-- Must be one of: male, female\
 \9\9level = 3,\
-\9\9portrait = \"mod_assets/textures/portraits/taghor.dds\" -- must be 128x128 dds file\
+\9\9portrait = \"mod_assets/textures/portraits/taghor.dds\", -- must be 128x128 dds file\
+\9\9\
+\9\9-- allowed skills: air_magic, armors, assassination, athletics, axes, daggers, \
+\9\9-- dodge, earth_magic, fire_magic, ice_magic, maces, missile_weapons, spellcraft,\
+\9\9-- staves, swords, throwing_weapons and unarmed_combat\
+\9\9skills = { fire_magic = 10, earth_magic = 20, air_magic = 30, ice_magic = 40}\
 \9}\
-\9\
+\9\9\
 \9addChampion(newguy)\
-\
 end\
 \
 function addChampion(newguy)\
@@ -430,9 +434,8 @@ function addChampion(newguy)\
 \9\9end\
 \9end\
 \
-\
 \9-- background border\
-\9local dialog = gw_rectangle.create('dialog', 100, 50, 660, 280)\
+\9local dialog = gw_rectangle.create('dialog', 50, 50, 660, 280)\
 \9dialog.color = {128, 128, 128, 200}\
 \9gw.addElement(dialog, 'gui')\
 \
@@ -464,7 +467,6 @@ function addChampion(newguy)\
 end\
 \
 function chosen(id, newguy)\
-\9print(\"Chosen \"..id)\
 \9\
 \9-- someone from the old party has to go\
 \9if (id >= 1 and id <= 4) then\
@@ -495,6 +497,35 @@ function dropAllItems(champion)\
 \9end\
 end\
 \
+function setLevel(champion, level)\
+\9while (champion:getLevel() < level) do\
+\9\9champion:gainExp(50)\
+\9end\
+\
+\9champion:addSkillPoints(-champion:getSkillPoints())\9\
+end\
+\
+function setSkills(champion, skills)\
+\9names = { \"air_magic\", \"armors\", \"assassination\", \"athletics\", \"axes\", \"daggers\", \"dodge\",\
+\9\9      \"earth_magic\", \"fire_magic\", \"ice_magic\", \"maces\", \"missile_weapons\", \"spellcraft\",\
+\9\9\9  \"staves\", \"swords\", \"throwing_weapons\", \"unarmed_combat\" }\
+\
+\9-- let's clear out any existing skills\
+\9for i,name in ipairs(names) do\
+\9\9x = champion:getSkillLevel(name)\
+\9\9if x > 0 then\
+\9\9\9champion:trainSkill(name, -x, false)\
+\9\9end\
+\9end\
+\9\
+\9-- Now let's set skills specified by user\
+\9for key,val in pairs(skills) do\
+\9\9champion:trainSkill(key, val, false)\
+\9end\
+\
+\
+end\
+\
 function setNewChampion(id, newguy)\
 \9\
 \9local x = party:getChampion(id)\
@@ -508,6 +539,9 @@ function setNewChampion(id, newguy)\
 \9x:setPortrait(newguy.portrait)\
 \9\
 \9dropAllItems(x)\
+\9\
+\9setLevel(x, newguy.level)\
+\9setSkills(x, newguy.skills)\
 \9\
 \9hudPrint(newguy.name..\" joins your party. \"..old_name.. \" will be remembered as a good fellow.\")\
 \9gw.removeElement('dialog', 'gui')\
