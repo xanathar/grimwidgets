@@ -436,7 +436,6 @@ spawn("script_entity", 12,14,2, "new_champion")
 \9\9-- Willpower\
 \9\9-- Protection\
 \9\9-- Evasion\
-\9\9-- Food\
 \9\9-- Load\
 \9\9-- Resist fire/cold/poison/shock\
 \9\9\
@@ -445,7 +444,10 @@ spawn("script_entity", 12,14,2, "new_champion")
 \9\9-- slots) or 0 (any empty slot in backpack)\
 \9\9-- Make sure you put things in the right slot. Wrong slot (e.g. attempt to try boots on head)\
 \9\9-- will make the item spawn to fail.\
-\9\9items = { battle_axe = 0, lurker_boots = 4, lurker_hood = 1, lurker_pants = 3, lurker_vest = 2 }\
+\9\9items = { battle_axe = 0, lurker_boots = 4, lurker_hood = 1, lurker_pants = 3, lurker_vest = 2 },\
+\9\9\
+\9\9-- food: 0 (starving) to 1000 (just ate the whole cow)\
+\9\9food = 100\
 \9\9\
 \9}\
 \9\9\
@@ -584,6 +586,11 @@ function setTraits(champion, traits)\
 \9end\
 end\
 \
+function setFood(champion, food)\
+\9champion:modifyFood(-champion:getFood())\
+\9champion:modifyFood(food)\
+end\
+\
 function setNewChampion(id, newguy)\
 \9\
 \9local x = party:getChampion(id)\
@@ -597,6 +604,7 @@ function setNewChampion(id, newguy)\
 \9x:setPortrait(newguy.portrait)\
 \9\
 \9dropAllItems(x)\
+\9addItems(x, newguy.items)\
 \9\
 \9setLevel(x, newguy.level)\
 \
@@ -605,8 +613,8 @@ function setNewChampion(id, newguy)\
 \9\
 \9resetTraits(x)\
 \9setTraits(x, newguy.traits)\
-\9\
-\9addItems(x, newguy.items)\
+\
+\9setFood(x, newguy.food)\9\
 \9\
 \9hudPrint(newguy.name..\" joins your party. \"..old_name.. \" will be remembered as a good fellow.\")\
 \9gw.removeElement('dialog', 'gui')\
