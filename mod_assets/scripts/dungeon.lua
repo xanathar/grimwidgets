@@ -309,7 +309,7 @@ function drawExample()\
 \9gw.setDefaultTextColor({255,255,255,255})\
 \
 \9-- background yellow image\
-\9local rect1 = gw_rectangle.create('rect1', 100, 50, 600, 300)\
+\9local rect1 = gw_rectangle.create('rect1', 100, 50, 600, 350)\
 \9rect1.color = {255, 255, 0}\
 \9gw.addElement(rect1, 'gui')\
 \9\
@@ -360,8 +360,8 @@ function drawExample()\
 \9rect2.color={0, 0, 255}\
 \9rect2:setRelativePosition{'left','top'}\
 \9\
-\9local rect3 = rect2:addChild('rectangle','rect3', 0, 0, 30, 30) -- rect3 in rect2, which is in rect1\
-\9rect3:setRelativePosition{'middle','center'}\
+\9local rect3 = rect2:addChild('rectangle','rect3', 0, 0, 30, 40) -- rect3 in rect2, which is in rect1\
+\9rect3:setRelativePosition{'top','left'}\
 \9rect3.marginTop = 5\
 \9rect3.marginLeft = 10\
 \9rect3.color = {255, 0, 0}\
