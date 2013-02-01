@@ -418,7 +418,35 @@ spawn("script_entity", 12,14,2, "new_champion")
 \9\9-- allowed skills: air_magic, armors, assassination, athletics, axes, daggers, \
 \9\9-- dodge, earth_magic, fire_magic, ice_magic, maces, missile_weapons, spellcraft,\
 \9\9-- staves, swords, throwing_weapons and unarmed_combat\
-\9\9skills = { fire_magic = 10, earth_magic = 20, air_magic = 30, ice_magic = 40}\
+\9\9skills = { fire_magic = 10, earth_magic = 20, air_magic = 30, ice_magic = 40},\
+\9\9\
+\9\9\
+\9\9-- allowed traits: aggressive, agile, athletic, aura, cold_resistant, evasive, \
+\9\9-- fire_resistant, fist_fighter, head_hunter, healthy, lightning_speed,\
+\9\9-- natural_armor, poison_resistant, skilled, strong_mind, tough\
+\9\9-- Traits must be specified in quotes\
+\9\9-- Typically each character has 2 traits, but you can specify more or less.\
+\9\9traits = { \"lightning_speed\", \"tough\", \"skilled\", \"head_hunter\", \"aura\" },\
+\9\9\
+\9\9-- todo:\
+\9\9-- Health\
+\9\9-- Energy\
+\9\9-- Strength\
+\9\9-- Dexterity\
+\9\9-- Willpower\
+\9\9-- Protection\
+\9\9-- Evasion\
+\9\9-- Food\
+\9\9-- Load\
+\9\9-- Resist fire/cold/poison/shock\
+\9\9\
+\9\9-- items: Notation item_name = slot. Slots numbering: 1 (head), 2 (torso), 3 (legs), 4 (feet), \
+\9\9-- 5 (cloak), 6 (neck), 7 (left hand), 8 (right hand), 9 (gaunlets), 10 (bracers), 11-31 (backpack\
+\9\9-- slots) or 0 (any empty slot in backpack)\
+\9\9-- Make sure you put things in the right slot. Wrong slot (e.g. attempt to try boots on head)\
+\9\9-- will make the item spawn to fail.\
+\9\9items = { battle_axe = 0, lurker_boots = 4, lurker_hood = 1, lurker_pants = 3, lurker_vest = 2 }\
+\9\9\
 \9}\
 \9\9\
 \9addChampion(newguy)\
@@ -497,6 +525,18 @@ function dropAllItems(champion)\
 \9end\
 end\
 \
+function addItems(champion, items)\
+\9slot = 31\
+\9for key,val in pairs(items) do\
+\9\9if val > 0 then\
+\9\9\9champion:insertItem(val, spawn(key))\
+\9\9else\
+\9\9\9champion:insertItem(slot, spawn(key))\
+\9\9\9slot = slot - 1 \
+\9\9end\
+\9end\
+end\
+\
 function setLevel(champion, level)\
 \9while (champion:getLevel() < level) do\
 \9\9champion:gainExp(50)\
@@ -505,10 +545,10 @@ function setLevel(champion, level)\
 \9champion:addSkillPoints(-champion:getSkillPoints())\9\
 end\
 \
-function setSkills(champion, skills)\
-\9names = { \"air_magic\", \"armors\", \"assassination\", \"athletics\", \"axes\", \"daggers\", \"dodge\",\
-\9\9      \"earth_magic\", \"fire_magic\", \"ice_magic\", \"maces\", \"missile_weapons\", \"spellcraft\",\
-\9\9\9  \"staves\", \"swords\", \"throwing_weapons\", \"unarmed_combat\" }\
+function resetSkills(champion)\
+\9local names = { \"air_magic\", \"armors\", \"assassination\", \"athletics\", \"axes\", \"daggers\", \"dodge\",\
+\9\9     \9    \"earth_magic\", \"fire_magic\", \"ice_magic\", \"maces\", \"missile_weapons\", \"spellcraft\",\
+\9\9\9        \"staves\", \"swords\", \"throwing_weapons\", \"unarmed_combat\" }\
 \
 \9-- let's clear out any existing skills\
 \9for i,name in ipairs(names) do\
@@ -517,13 +557,31 @@ function setSkills(champion, skills)\
 \9\9\9champion:trainSkill(name, -x, false)\
 \9\9end\
 \9end\
+end\
+\
+function setSkills(champion, skills)\
 \9\
 \9-- Now let's set skills specified by user\
 \9for key,val in pairs(skills) do\
 \9\9champion:trainSkill(key, val, false)\
 \9end\
+end\
 \
+function resetTraits(champion)\
+\9local traits = { \"aggressive\", \"agile\", \"athletic\", \"aura\", \"cold_resistant\", \"evasive\", \"fire_resistant\",\
+\9\9\9\9\9\"fist_fighter\", \"head_hunter\", \"healthy\", \"lightning_speed\", \"natural_armor\", \"poison_resistant\", \"skilled\", \"strong_mind\", \"tough\" }\
+\9for i,name in pairs(traits) do\
+\9\9if champion:hasTrait(name) then\
+\9\9\9champion:removeTrait(name)\
+\9\9end\
+\9end\
 \
+end\
+\
+function setTraits(champion, traits)\
+\9for key, val in pairs(traits) do\
+\9\9champion:addTrait(val)\
+\9end\
 end\
 \
 function setNewChampion(id, newguy)\
@@ -541,7 +599,14 @@ function setNewChampion(id, newguy)\
 \9dropAllItems(x)\
 \9\
 \9setLevel(x, newguy.level)\
+\
+\9resetSkills(x)\
 \9setSkills(x, newguy.skills)\
+\9\
+\9resetTraits(x)\
+\9setTraits(x, newguy.traits)\
+\9\
+\9addItems(x, newguy.items)\
 \9\
 \9hudPrint(newguy.name..\" joins your party. \"..old_name.. \" will be remembered as a good fellow.\")\
 \9gw.removeElement('dialog', 'gui')\
