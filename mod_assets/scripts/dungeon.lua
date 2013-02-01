@@ -409,35 +409,44 @@ spawn("script_entity", 12,14,2, "new_champion")
 	:setSource("function newChampion()\
 \9newguy = {\
 \9\9name = \"Taghor\",    -- just a name\
-\9\9race = \"Insectoid\", -- Must be one of: Human, Minotaur, Lizardman, Insectoid\
-\9\9class = \"Mage\",  -- Must be one of: Figther, Rogue, Mage or Ranger\
-\9\9sex = \"male\", \9\9-- Must be one of: male, female\
-\9\9level = 3,\
+\9\9race = \"Insectoid\", -- must be one of: Human, Minotaur, Lizardman, Insectoid\
+\9\9class = \"Mage\",     -- must be one of: Figther, Rogue, Mage or Ranger\
+\9\9sex = \"male\", \9\9-- must be one of: male, female\
+\9\9level = 3,          -- character's level\
 \9\9portrait = \"mod_assets/textures/portraits/taghor.dds\", -- must be 128x128 dds file\
 \9\9\
 \9\9-- allowed skills: air_magic, armors, assassination, athletics, axes, daggers, \
 \9\9-- dodge, earth_magic, fire_magic, ice_magic, maces, missile_weapons, spellcraft,\
 \9\9-- staves, swords, throwing_weapons and unarmed_combat\
-\9\9skills = { fire_magic = 10, earth_magic = 20, air_magic = 30, ice_magic = 40},\
-\9\9\
-\9\9\
+\9\9skills = { fire_magic = 0, earth_magic = 0, air_magic = 0, ice_magic = 0 },\
+\9\9\9\9\
 \9\9-- allowed traits: aggressive, agile, athletic, aura, cold_resistant, evasive, \
 \9\9-- fire_resistant, fist_fighter, head_hunter, healthy, lightning_speed,\
 \9\9-- natural_armor, poison_resistant, skilled, strong_mind, tough\
-\9\9-- Traits must be specified in quotes\
+\9\9-- Traits must be specified in quotes.\
 \9\9-- Typically each character has 2 traits, but you can specify more or less.\
 \9\9traits = { \"lightning_speed\", \"tough\", \"skilled\", \"head_hunter\", \"aura\" },\
 \9\9\
-\9\9-- todo:\
-\9\9-- Health\
-\9\9-- Energy\
-\9\9-- Strength\
-\9\9-- Dexterity\
-\9\9-- Willpower\
-\9\9-- Protection\
-\9\9-- Evasion\
-\9\9-- Load\
-\9\9-- Resist fire/cold/poison/shock\
+\9\9health = 80, \9\9  -- Maximum health\
+\9\9current_health = 70,  -- Current health\
+\9\9\
+\9\9energy = 300,         -- Maximum energy\
+\9\9current_energy = 250, -- Current energy\
+\
+\9\9strength = 12,        -- Strength\
+\9\9dexterity = 11,       -- Dexterity\
+\9\9vitality = 10,        -- Vitality\
+\9\9willpower = 9,        -- Willpower\
+\9\9\
+\9\9protection = 25,      -- protection\
+\9\9evasion = 30, \9\9  -- evasion\
+\9\9\9\9\
+\9\9-- Resist fire/cold/poison/shock (remember that those values will be modified by bonuses\
+\9\9-- from fire, cold, poison or shock magic\
+\9\9resist_fire = 11,\
+\9\9resist_cold = 22,\
+\9\9resist_poison = 33,\
+\9\9resist_shock = 44,\
 \9\9\
 \9\9-- items: Notation item_name = slot. Slots numbering: 1 (head), 2 (torso), 3 (legs), 4 (feet), \
 \9\9-- 5 (cloak), 6 (neck), 7 (left hand), 8 (right hand), 9 (gaunlets), 10 (bracers), 11-31 (backpack\
@@ -450,7 +459,9 @@ spawn("script_entity", 12,14,2, "new_champion")
 \9\9food = 100\
 \9\9\
 \9}\
-\9\9\
+\
+\9-- Call addChampion method. It will add new guy to the party if there are suitable slots and will\
+\9-- display a GUI prompt selecting a party member to drop if your party is already 4 guys\
 \9addChampion(newguy)\
 end\
 \
@@ -472,7 +483,7 @@ function addChampion(newguy)\
 \9local text1 = dialog:addChild('rectangle','text1', 10, 10, 640, 50)\
 \9\
 \9text1.text = newguy.name .. \" would like to join your party, but since there is already four of you\"\
-\9\9..\", someone else would have to go. Please pick who you want to leave behind:\"\
+\9\9..\", someone else would have to go. Please pick who will be left behind:\"\
 \9text1.color = {255,255,255}\
 \9dialog:addChild(text1)\
 \
@@ -561,6 +572,39 @@ function resetSkills(champion)\
 \9end\
 end\
 \
+function setStats(champion, newguy)\
+\
+\9champion:setStatMax(\"health\", newguy.health)\
+\9champion:setStat(\"health\", newguy.current_health)\
+\9\
+\9champion:setStatMax(\"energy\", newguy.energy)\
+\9champion:setStat(\"energy\", newguy.current_energy)\
+\9\
+\9champion:setStatMax(\"strength\", newguy.strength)\
+\9champion:setStatMax(\"dexterity\", newguy.dexterity)\
+\9champion:setStatMax(\"vitality\", newguy.vitality)\
+\9champion:setStatMax(\"willpower\", newguy.willpower)\
+\9champion:setStatMax(\"protection\", newguy.protection)\
+\9champion:setStatMax(\"evasion\", newguy.evasion)\
+\
+\9champion:setStat(\"strength\", newguy.strength)\
+\9champion:setStat(\"dexterity\", newguy.dexterity)\
+\9champion:setStat(\"vitality\", newguy.vitality)\
+\9champion:setStat(\"willpower\", newguy.willpower)\
+\9champion:setStat(\"protection\", newguy.protection)\
+\9champion:setStat(\"evasion\", newguy.evasion)\
+\9\
+\9champion:setStatMax(\"resist_fire\", newguy.resist_fire)\
+\9champion:setStatMax(\"resist_cold\", newguy.resist_cold)\
+\9champion:setStatMax(\"resist_poison\", newguy.resist_poison)\
+\9champion:setStatMax(\"resist_shock\", newguy.resist_shock)\
+\
+\9champion:setStat(\"resist_fire\", newguy.resist_fire)\
+\9champion:setStat(\"resist_cold\", newguy.resist_cold)\
+\9champion:setStat(\"resist_poison\", newguy.resist_poison)\
+\9champion:setStat(\"resist_shock\", newguy.resist_shock)\
+end\
+\
 function setSkills(champion, skills)\
 \9\
 \9-- Now let's set skills specified by user\
@@ -614,7 +658,9 @@ function setNewChampion(id, newguy)\
 \9resetTraits(x)\
 \9setTraits(x, newguy.traits)\
 \
-\9setFood(x, newguy.food)\9\
+\9setFood(x, newguy.food)\
+\9\
+\9setStats(x, newguy)\
 \9\
 \9hudPrint(newguy.name..\" joins your party. \"..old_name.. \" will be remembered as a good fellow.\")\
 \9gw.removeElement('dialog', 'gui')\
