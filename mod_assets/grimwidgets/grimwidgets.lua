@@ -36,5 +36,4 @@ gw_loadModule('gw_events')
 gw_loadModule('gw_text')
 gw_loadModule('gw_string')
 
-
-
+gw_loadModule('gw_party')

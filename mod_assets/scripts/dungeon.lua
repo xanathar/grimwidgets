@@ -418,7 +418,7 @@ spawn("script_entity", 12,14,2, "new_champion")
 \9\9-- allowed skills: air_magic, armors, assassination, athletics, axes, daggers, \
 \9\9-- dodge, earth_magic, fire_magic, ice_magic, maces, missile_weapons, spellcraft,\
 \9\9-- staves, swords, throwing_weapons and unarmed_combat\
-\9\9skills = { fire_magic = 0, earth_magic = 0, air_magic = 0, ice_magic = 0 },\
+\9\9skills = { fire_magic = 10, earth_magic = 20, air_magic = 30, ice_magic = 40 },\
 \9\9\9\9\
 \9\9-- allowed traits: aggressive, agile, athletic, aura, cold_resistant, evasive, \
 \9\9-- fire_resistant, fist_fighter, head_hunter, healthy, lightning_speed,\
@@ -453,7 +453,7 @@ spawn("script_entity", 12,14,2, "new_champion")
 \9\9-- slots) or 0 (any empty slot in backpack)\
 \9\9-- Make sure you put things in the right slot. Wrong slot (e.g. attempt to try boots on head)\
 \9\9-- will make the item spawn to fail.\
-\9\9items = { battle_axe = 0, lurker_boots = 4, lurker_hood = 1, lurker_pants = 3, lurker_vest = 2 },\
+\9\9items = { battle_axe = 0, lurker_hood = 1, lurker_vest = 2, lurker_pants = 3, lurker_boots = 4 },\
 \9\9\
 \9\9-- food: 0 (starving) to 1000 (just ate the whole cow)\
 \9\9food = 100\
@@ -462,243 +462,10 @@ spawn("script_entity", 12,14,2, "new_champion")
 \
 \9-- Call addChampion method. It will add new guy to the party if there are suitable slots and will\
 \9-- display a GUI prompt selecting a party member to drop if your party is already 4 guys\
-\9addChampion(newguy)\
+\9gw_party.addChampion(newguy)\
 end\
 \
-function addChampion(newguy)\
-\
-\9-- first let's check if there is empty slot\
-\9for i=1,4 do\
-\9\9if not party:getChampion(i):getEnabled() then\
-\9\9\9chosen(i, newguy)\
-\9\9\9return\
-\9\9end\
-\9end\
-\
-\9-- background border\
-\9local dialog = gw_rectangle.create('dialog', 50, 50, 660, 280)\
-\9dialog.color = {128, 128, 128, 200}\
-\9gw.addElement(dialog, 'gui')\
-\
-\9local text1 = dialog:addChild('rectangle','text1', 10, 10, 640, 50)\
-\9\
-\9text1.text = newguy.name .. \" would like to join your party, but since there is already four of you\"\
-\9\9..\", someone else would have to go. Please pick who will be left behind:\"\
-\9text1.color = {255,255,255}\
-\9dialog:addChild(text1)\
-\
-\9for i=1,4 do\9\
-\9\9local info = showChampion(i, party:getChampion(i))\
-\9\9dialog:addChild(info)\
-\9\9info.x = 10 + (i-1)*130\
-\9\9info.y = 70\
-\9\9info.onPress = function(self) chosen(i, newguy) end\
-\
-\9\9-- we could use info:setRelativePosition({'after','info'..(i-1)}) here,\
-\9\9-- but that would make the rectangles to touch each other without any\
-\9\9-- borders or margins\
-\9end\
-\9\
-\9local info = showCandidate(newguy)\
-\9dialog:addChild(info)\
-\9info.x = 10 + 4*130\
-\9info.y = 70\
-\9info.onPress = function(self) chosen(5, newguy) end\
-\
-end\
-\
-function chosen(id, newguy)\
-\9\
-\9-- someone from the old party has to go\
-\9if (id >= 1 and id <= 4) then\
-\9\9setNewChampion(id, newguy)\
-\9end\
-\9\
-\9-- the new guy has to go\
-\9if (id == 5) then\
-\9\9local tmp\
-\9\9if newguy.sex == \"male\" then\
-\9\9\9tmp = \"him\"\
-\9\9else\
-\9\9\9tmp = \"her\"\
-\9\9end\
-\9\9hudPrint(newguy.name .. \" turns back and goes away. You never seen \"..tmp..\" again.\")\
-        gw.removeElement('dialog', 'gui')\
-\9end\
-end\
-\
-function dropAllItems(champion)\
-\9for slot=1,31 do\
-\9\9local item = champion:getItem(slot)\
-\9\9if item then\
-\9\9\9local saveditem = grimq.saveItem(item)\
-\9\9\9champion:removeItem(slot)\
-\9\9\9grimq.loadItem(saveditem, party.level, party.x, party.y, party.facing, saveditem.id)\9\9\9\
-\9\9end\9\
-\9end\
-end\
-\
-function addItems(champion, items)\
-\9slot = 31\
-\9for key,val in pairs(items) do\
-\9\9if val > 0 then\
-\9\9\9champion:insertItem(val, spawn(key))\
-\9\9else\
-\9\9\9champion:insertItem(slot, spawn(key))\
-\9\9\9slot = slot - 1 \
-\9\9end\
-\9end\
-end\
-\
-function setLevel(champion, level)\
-\9while (champion:getLevel() < level) do\
-\9\9champion:gainExp(50)\
-\9end\
-\
-\9champion:addSkillPoints(-champion:getSkillPoints())\9\
-end\
-\
-function resetSkills(champion)\
-\9local names = { \"air_magic\", \"armors\", \"assassination\", \"athletics\", \"axes\", \"daggers\", \"dodge\",\
-\9\9     \9    \"earth_magic\", \"fire_magic\", \"ice_magic\", \"maces\", \"missile_weapons\", \"spellcraft\",\
-\9\9\9        \"staves\", \"swords\", \"throwing_weapons\", \"unarmed_combat\" }\
-\
-\9-- let's clear out any existing skills\
-\9for i,name in ipairs(names) do\
-\9\9x = champion:getSkillLevel(name)\
-\9\9if x > 0 then\
-\9\9\9champion:trainSkill(name, -x, false)\
-\9\9end\
-\9end\
-end\
-\
-function setStats(champion, newguy)\
-\
-\9champion:setStatMax(\"health\", newguy.health)\
-\9champion:setStat(\"health\", newguy.current_health)\
-\9\
-\9champion:setStatMax(\"energy\", newguy.energy)\
-\9champion:setStat(\"energy\", newguy.current_energy)\
-\9\
-\9champion:setStatMax(\"strength\", newguy.strength)\
-\9champion:setStatMax(\"dexterity\", newguy.dexterity)\
-\9champion:setStatMax(\"vitality\", newguy.vitality)\
-\9champion:setStatMax(\"willpower\", newguy.willpower)\
-\9champion:setStatMax(\"protection\", newguy.protection)\
-\9champion:setStatMax(\"evasion\", newguy.evasion)\
-\
-\9champion:setStat(\"strength\", newguy.strength)\
-\9champion:setStat(\"dexterity\", newguy.dexterity)\
-\9champion:setStat(\"vitality\", newguy.vitality)\
-\9champion:setStat(\"willpower\", newguy.willpower)\
-\9champion:setStat(\"protection\", newguy.protection)\
-\9champion:setStat(\"evasion\", newguy.evasion)\
-\9\
-\9champion:setStatMax(\"resist_fire\", newguy.resist_fire)\
-\9champion:setStatMax(\"resist_cold\", newguy.resist_cold)\
-\9champion:setStatMax(\"resist_poison\", newguy.resist_poison)\
-\9champion:setStatMax(\"resist_shock\", newguy.resist_shock)\
-\
-\9champion:setStat(\"resist_fire\", newguy.resist_fire)\
-\9champion:setStat(\"resist_cold\", newguy.resist_cold)\
-\9champion:setStat(\"resist_poison\", newguy.resist_poison)\
-\9champion:setStat(\"resist_shock\", newguy.resist_shock)\
-end\
-\
-function setSkills(champion, skills)\
-\9\
-\9-- Now let's set skills specified by user\
-\9for key,val in pairs(skills) do\
-\9\9champion:trainSkill(key, val, false)\
-\9end\
-end\
-\
-function resetTraits(champion)\
-\9local traits = { \"aggressive\", \"agile\", \"athletic\", \"aura\", \"cold_resistant\", \"evasive\", \"fire_resistant\",\
-\9\9\9\9\9\"fist_fighter\", \"head_hunter\", \"healthy\", \"lightning_speed\", \"natural_armor\", \"poison_resistant\", \"skilled\", \"strong_mind\", \"tough\" }\
-\9for i,name in pairs(traits) do\
-\9\9if champion:hasTrait(name) then\
-\9\9\9champion:removeTrait(name)\
-\9\9end\
-\9end\
-\
-end\
-\
-function setTraits(champion, traits)\
-\9for key, val in pairs(traits) do\
-\9\9champion:addTrait(val)\
-\9end\
-end\
-\
-function setFood(champion, food)\
-\9champion:modifyFood(-champion:getFood())\
-\9champion:modifyFood(food)\
-end\
-\
-function setNewChampion(id, newguy)\
-\9\
-\9local x = party:getChampion(id)\
-\9local old_name = x:getName()\
-\9local empty_slot = x:getEnabled()\
-\9x:setName(newguy.name)\
-\9x:setRace(newguy.race)\
-\9x:setClass(newguy.class)\
-\9x:setSex(newguy.sex)\
-\9x:setEnabled(true)\
-\9x:setPortrait(newguy.portrait)\
-\9\
-\9dropAllItems(x)\
-\9addItems(x, newguy.items)\
-\9\
-\9setLevel(x, newguy.level)\
-\
-\9resetSkills(x)\
-\9setSkills(x, newguy.skills)\
-\9\
-\9resetTraits(x)\
-\9setTraits(x, newguy.traits)\
-\
-\9setFood(x, newguy.food)\
-\9\
-\9setStats(x, newguy)\
-\9\
-\9hudPrint(newguy.name..\" joins your party. \"..old_name.. \" will be remembered as a good fellow.\")\
-\9gw.removeElement('dialog', 'gui')\
-\
-end\
-\
-function showChampion(id, champion)\
-\9local info = gw_rectangle.create(\"info\"..id, 0, 0, 120, 200)\
-\9info.color = {255,255,255}\
-\9info.text = champion:getName()\
-\9\
-\9local details = gw_rectangle.create(\"details\"..id, 0, 50, 120, 150)\
-\9details.color = { 192, 192, 255, 255}\
-\9info:addChild(details)\
-\9details.text = champion:getRace() .. \"\\n\" \
-\9            .. champion:getClass() .. \"\\n\"\
-\9            .. champion:getSex() .. \"\\n\"\
-\9\9\9\9.. champion:getLevel() .. \" level\"\
-\9details.dontwrap = true\
-\9            \9\
-\9return info\
-end\
-\
-function showCandidate(champion)\
-\9local info = gw_rectangle.create(\"info5\", 0, 0, 120, 200)\
-\9info.color = {230, 255, 230}\
-\9info.text = champion.name\
-\9\
-\9local details = gw_rectangle.create(\"details5\", 0, 50, 120, 150)\
-\9details.color = { 192, 192, 255, 255}\
-\9info:addChild(details)\
-\9details.text = champion.race .. \"\\n\" \
-\9            .. champion.class .. \"\\n\"\
-\9            .. champion.sex .. \"\\n\"\
-\9\9\9\9.. champion.level .. \" level\"\
-\9details.dontwrap = true\
-\9return info\
-end")
+")
 spawn("lightning_rod", 14,14,3, "lightning_rod_1")
 spawn("sack", 15,15,3, "sack_1")
 spawn("rock", 15,15,1, "rock_1")
