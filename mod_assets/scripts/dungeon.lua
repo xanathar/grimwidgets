@@ -200,58 +200,67 @@ function createSpellBook()\
 \9\9end\9\9\
 \9end\
 \9\
+\9local page1 = book:addChild('element','page1',20,20,350,500)\
+\9local page2 = book:addChild('element','page2',490,30,350,500)\
+\9\
 \9for _,spell in ipairs(spells) do\
-\9\9local p = book:addChild(createSpellParagraf(spell))\
-\9\9p:setRelativePosition('below_previous')\
+\9\9addSpell(book,spell)\
 \9end\
 \9\
 \9return book\
 \
 end\
 \
-function createSpellParagraf(spell)\
-\9local p = gw_rectangle.create(spell.name,0,0,200,30)\
-\9p.marginTop = 10\
-\9p.marginLeft = 20\
-\9p.color = {0,0,0,0}\
-\9p:addChild('button',spell.name..'_memo',0,0,'Memorize')\
-\9local text = p:addChild('text',spell.name..'_text',0,0,300,20,spell.uiname)\
+function addSpell(book,spell)\
+\9page1 = book:getChild('page1')\
+\9\
+\9local line = page1:addChild('element',spell.name,0,20,200,30)\
+\9line.marginTop = 10\
+\9line.marginLeft = 20\
+\
+\9line:setRelativePosition('below_previous')\
+\9line:addChild('button',spell.name..'_memo',0,0,'Memorize')\
+\9\
+\9local text = line:addChild('text',spell.name..'_text',0,0,300,20,spell.uiname)\
 \9text.marginLeft = 10\
 \9text:setRelativePosition('after_previous')\
 \9\
-\9text.spell = spell\
+\9text.onClick = _turnPage\
 \9\
-\9text.onClick = function(self,ctx)\
-\9\9\9if (self.spell.runes) then\
-\9\9\9\9local page = gw_rectangle.create('spell_book_page',490,80,350,500)\
-\9\9\9\9page.color = {0,0,0,0}\
-\9\9\9\9local runes = gw_rectangle.create('spell_book_runes',0,0,240,240)\
-\9\9\9\9runes.color = {0,0,0,0}\
-\9\9\9\9page:addChild(runes)\
-\9\9\9\9runes:setRelativePosition{'top','center'}\
-\9\9\9\9\
-\9\9\9\9\
-\9\9\9\9for _,runeChar in ipairs({'A','B','C','D','E','F','G','H','I'}) do\
-\9\9\9\9\9\
-\9\9\9\9\9local runeImg = runes:addChild('image','rune_'..runeChar,0,0,100,100,spell_book.getRuneImage(runeChar))\
-\9\9\9\9\9local pos = spell_book.getRunePosition(runeChar)\
-\9\9\9\9\9runeImg.x = pos[1] * 80 - 80\
-\9\9\9\9\9runeImg.y = pos[2] * 80 - 80\
-\9\9\9\9\9if not string.find(self.spell.runes,runeChar) then\
-\9\9\9\9\9\9runeImg.color = {100,100,100,150}\
-\9\9\9\9\9end\
-\9\9\9\9end\9\9\
-\9\9\9\9local t = page:addChild('text','spell_text',0,250,350,200,spell.description)\
-\9\9\9\9t.textColor = {100,100,100,200}\
-\9\9\9\9t.textSize = 'large'\
-\9\9\9\9gw.removeElement('spell_book_page','skills')\
-\9\9\9\9gw.addElement(page,'skills')\
-\9\9\9\9\
-\9\9\9end\9\9\
-\9end\
-\9return p\
+\9local page2 = book:getChild('page2')\
+\9\
+\9local spellDescr = page2:addChild('element','runes_'..spell.name,0,0,350,400)\
+\9spellDescr:activate()\
+\9text.spellDescr = spellDescr\
+\9\
+\9local runes = spellDescr:addChild('element','runes_'..spell.name,0,0,240,240)\
+\9runes:setRelativePosition{'top','center'}\
+\9\
+\9for _,runeChar in ipairs({'A','B','C','D','E','F','G','H','I'}) do\
+\9\9\
+\9\9local runeImg = runes:addChild('image','rune_'..runeChar,0,0,100,100,spell_book.getRuneImage(runeChar))\
+\9\9local pos = spell_book.getRunePosition(runeChar)\
+\9\9runeImg.x = pos[1] * 80 - 80\
+\9\9runeImg.y = pos[2] * 80 - 80\
+\9\9if not string.find(spell.runes,runeChar) then\
+\9\9\9runeImg.color = {100,100,100,150}\
+\9\9end\
+\9end\9\9\
+\9\
+\9local spellText = spellDescr:addChild('text','spell_text_'..spell.name,0,250,350,200,spell.description)\
+\9spellText.textColor = {150,150,150,200}\
+\9spellText.textSize = 'medium'\
+\
 \9\
 end\
+\
+function _turnPage(self,ctx)\
+\9for i, elem in ipairs(self:getAncestor():getChild('page2').children) do\
+\9\9elem:deactivate()\
+\9end\
+\9self.spellDescr:activate()\
+end\
+\
 \
 function autoexec()\
 \9-- testing\
@@ -384,12 +393,10 @@ function drawExample()\
 \9\
 \9local closeButton = rect1:addChild('button3D','close_rect_1',20,20,'X',30,20)\
 \9closeButton.onPress = function(self)\
-\9\9self:getAncestor():deactivate()\
+\9\9gw.removeElement('rect1')\
 \9end\
 \9closeButton:setRelativePosition({'top','right'})\
 \9\
-\9\
-\9gw.addElement(rect1, 'gui')\
 \9\
 \9\
 end\
@@ -545,3 +552,206 @@ spawn("lightning_rod", 14,14,3, "lightning_rod_1")
 spawn("sack", 15,15,3, "sack_1")
 spawn("rock", 15,15,1, "rock_1")
 spawn("rock", 15,15,0, "rock_2")
+spawn("script_entity", 19,26,3, "gw_element")
+	:setSource("function create(id, x, y, width, height)\
+    local elem = {}\
+    elem.id = id\
+\9elem.x = x\
+\9elem.y = y\
+\9elem.marginLeft=0\
+\9elem.marginTop=0\
+\9elem.width = width\
+\9elem.height = height\
+\9elem.parent = nil\
+\9elem.children = {}\
+\9elem.addChild = _addChild\
+\9elem.drawSelf = _drawNone\
+\9elem.draw = _drawAll\
+\9elem.onPress = nil\
+\9elem.onClick = nil\
+\9elem.firstMousePressPoint = nil\
+\9elem.setRelativePosition = _setRelativePosition\
+\9elem.getChild = _getChild\
+\9elem.moveAfter = _moveAfter\
+\9elem.moveBelow = _moveBelow\
+\9elem.color = gw.getDefaultColor()\
+\9elem.textColor = gw.getDefaultTextColor()\
+\9elem.textSize = 'small'\
+\9elem.getAncestor = _getAncestor\
+\9elem.deactivate = _deactivate\
+\9elem.activate = _activate\
+\9elem.active = true\
+\9return elem\
+end\
+\
+function _drawNone()\
+end\
+\
+function _deactivate(self)\
+\9self.active = false\
+end\
+\
+function _activate(self)\
+\9self.active = true\
+end\
+\
+-- returns the 1st parent in hierarchy or self if parent is not defined\
+function _getAncestor(self)\
+\9if type(self.parent) == 'table' then\
+\9\9return self.parent:getAncestor()\
+\9end\
+\9return self\
+end\
+\
+-- draws whole element, including all its children\
+function _drawAll(self, ctx,champion)\
+\9if not self.active then return end\
+\9if (self.color) then\
+    \9ctx.color(self.color[1], self.color[2], self.color[3], self.color[4])\
+\9end\
+\9if self.onDraw and self:onDraw(ctx,champion) == false then\
+\9\9return\
+\9end\9\
+\9if self.parent then\
+\9\9self.x = self.x + self.parent.x\
+\9\9self.y = self.y + self.parent.y \
+\9end\
+\9self.x = self.x + self.marginLeft\
+\9self.y = self.y + self.marginTop\
+\
+\9\
+\9self.drawSelf(self, ctx)\
+\9if (self.onPress ~= nil) and (ctx.button(self.id, self.x, self.y, self.width, self.height)) then\
+\9\9self:onPress()\
+\9end\
+\9gw_string.drawElementText(self,ctx)\
+\
+\9-- we manage onClick ourselves\
+\9if (ctx.mouseDown(0)) then\
+\9\9if (self.firstMousePressPoint == nil) and gw_util.isPointInBox(ctx.mouseX, ctx.mouseY, self.x, self.y, self.width, self.height) then\
+\9\9\9self.firstMousePressPoint = { x = ctx.mouseX, y = ctx.mouseY }\
+\9\9end\
+\9else\
+\9\9if (self.firstMousePressPoint ~= nil) then\
+\9\9\9if (self.onClick ~= nil) and (gw_util.isPointInBox(ctx.mouseX, ctx.mouseY, self.x, self.y, self.width, self.height)) then\
+\9\9\9\9self:onClick()\
+\9\9\9end\
+\9\9\9self.firstMousePressPoint = nil\
+\9\9end\
+\9end\
+\
+\9for key,child in pairs(self.children) do\
+\9\9child:draw(ctx) -- draw child element\
+\9end\
+\9\
+\9if self.parent then\
+\9\9self.x = self.x - self.parent.x\
+\9\9self.y = self.y - self.parent.y \
+\9end\
+\9self.x = self.x - self.marginLeft\
+\9self.y = self.y - self.marginTop\9\
+end\
+\
+function _addChild(parent, child,id,x,y,width,height,p1,p2,p3)\
+\9if type(parent) ~= 'table' then\
+\9\9print('Invalid parent, use elem:addChild() instead of elem.addChild')\
+\9\9return {}\
+\9end \
+\9if type(child) == 'string' then\
+\9\9child = gw.create(child,id,x,y,width,height,p1,p2,p3)\
+\9end \
+\
+\9table.insert(parent.children, child)\
+\9child.parent = parent\
+\9return child\
+end\
+\
+function _getChild(self,id)\
+\9for _,child in ipairs(self.children) do\
+\9\9if child.id == id then\
+\9\9\9return child\
+\9\9end\
+\9end\
+end\
+\
+\
+-- sets element's relative position to parent\
+-- positions can be a string or table\
+-- possible values: top,middle,bottom,left,center,right\
+-- example \
+function _setRelativePosition(e,positions)\
+\9if e.parent == nil then\
+\9\9print(\"Cant's set relative position to element without a parent\")\
+\9\9return\
+\9end\
+\9if type(positions) == 'string' then\
+\9\9positions = {positions}\
+\9end\
+\9if (positions[1] == 'after') then\
+\9\9local elementId = positions[2]\
+\9\9local elem = e.parent:getChild(elementId)\
+\9\9if not elem then\
+\9\9\9print('Child element '..elementId..' not found')\
+\9\9\9return\
+\9\9end\
+\9\9e:moveAfter(elem)\
+\9\9return\
+\9end\
+\9if (positions[1] == 'after_previous') then\
+\9\9local elem = e.parent.children[#e.parent.children - 1]\
+\9\9if not elem then\
+\9\9\9return\
+\9\9end\
+\9\9e:moveAfter(elem)\
+\9\9return\
+\9end\9\9\9\
+\9if (positions[1] == 'below') then\
+\9\9local elementId = positions[2]\
+\9\9local elem = e.parent:getChild(elementId)\
+\9\9if not elem then\
+\9\9\9print('Child element '..elementId..' not found')\
+\9\9\9return\
+\9\9end\
+\9\9e:moveBelow(elem)\
+\9\9return\
+\9end\9\
+\9if (positions[1] == 'below_previous') then\
+\9\9local elem = e.parent.children[#e.parent.children - 1]\
+\9\9if not elem then\
+\9\9\9return\
+\9\9end\
+\9\9e:moveBelow(elem)\
+\9\9return\
+\9end\9\9\
+\9\
+\9positions = help.tableToSet(positions)\
+\9if positions.center then\
+\9\9e.x = math.ceil((e.parent.width - e.width) / 2) \
+\9end\
+\9if positions.left then\
+\9\9e.x = 0\
+\9end\9\
+\9if positions.right then\
+\9\9e.x = e.parent.width - e.width \
+\9end\9\9\
+\9if positions.top then\
+\9\9e.y = 0\
+\9end\
+\9if positions.bottom then\
+\9\9e.y =  e.parent.height - e.height \
+\9end\9\9\9\
+\9if positions.middle then\
+\9\9e.y = math.ceil((e.parent.height - e.height) / 2)\
+\9end\9\
+\9\
+end\
+\
+function _moveAfter(self,elem)\
+\9\9self.x = elem.x + elem.width + elem.marginLeft\
+\9\9self.y = elem.y\
+end\
+\
+function _moveBelow(self,elem)\
+\9\9self.x = elem.x \
+\9\9self.y = elem.y + elem.height + elem.marginTop\
+end")

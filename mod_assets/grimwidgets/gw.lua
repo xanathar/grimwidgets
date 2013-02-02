@@ -1,5 +1,4 @@
 fw_addModule('gw',[[
-
 keyHooks = {}
 elements = {
 	gui = {},
@@ -7,6 +6,7 @@ elements = {
 	skills = {},
 	inventory = {}
 }
+
 defaultColor = {255,255,255,255}
 defaultTextColor = {255,255,255,255}
 
@@ -30,9 +30,27 @@ end
 
 function _drawElements(g,hookName,champion)
 	hookName = hookName or 'gui'
-	for id,element in pairs(elements[hookName]) do
-		element:draw(g,champion)
+	local hasDeletedElements = false
+	
+	for i,elem in ipairs(elements[hookName]) do
+		if elem.deleted then
+			hasDeletedElements = true
+		else
+			elem:draw(g,champion)
+		end
 	end
+	-- safely delete elements marked as deleted
+	-- maintaining indexes. This way a element can delete itself without crash
+	if hasDeletedElements and #elements[hookName] > 0 then
+		for i = #elements[hookName], 1, -1 do
+			if (elements[hookName][i].deleted) then
+				table.remove(elements[hookName],i)	
+			end
+		end	
+	
+	end
+	
+	
 end
 
 function _processKeyHooks(g)
@@ -70,15 +88,20 @@ function addElement(element,hookName)
    	table.insert(elements[hookName],element)
 end
 
-function removeElement(id,hookName)
+function getElement(id,hookName)
 	hookName = hookName or 'gui'
 	for i,elem in ipairs(elements[hookName]) do
 		if elem.id == id then
-			table.remove(elements[hookName],i)
-			return
+			return elem
 		end
-	end
+	end	
 end
+
+function removeElement(id,hookName)
+	local elem = getElement(id,hookName)
+	if elem then elem.deleted = true end
+end
+
 -- general element factory method
 function create(elementType,id,arg1,arg2,arg3,arg4,arg5,arg6)
 	if type(elementType) ~= 'string' then
