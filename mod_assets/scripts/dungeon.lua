@@ -23,7 +23,7 @@ mapDesc([[
 ##############...###############
 ##############.....#############
 ##############.....#############
-################################
+##############...###############
 ################################
 ################################
 ################################
@@ -491,3 +491,96 @@ spawn("rock", 15,15,0, "rock_2")
 spawn("lever", 14,15,3, "lever_1")
 	:addConnector("activate", "debug", "debugGrid")
 	:addConnector("deactivate", "debug", "disableGrid")
+spawn("script_entity", 14,19,2, "quickDialog_demo")
+	:setSource("--\
+-- Example of the Dialog.quickDialog() function\
+-- \
+-- It enables you to start a dialog with a close button by starting one function.\
+-- Tip: use [[ and ]] to define a multiple-line-string.\
+--\
+\
+function press()\
+\9Dialog.quickDialog([[This is an example of the dialog system.\
+\
+Dialog code was written by Mahric for Legends\
+of the Northern Realms mod. It is being merged\
+with grimwidgets by Thomson. This is a work\
+in progress.\
+\
+Features:\
+ - Grimrock style interface\
+ - Automatically resizing window and buttons\
+ - Text appears on screen, as if being told\
+ - Optional portrait of npc you talk to\
+\
+Check the wiki for more info how to use it,\
+But first see if you can get out of here...]], clicked)\
+end\
+\
+function clicked()\
+\9hudPrint(\"Why did you close this awesome looking dialog?\")\
+end")
+spawn("wall_button", 14,17,2, "wall_button_1")
+	:addConnector("toggle", "quickDialog_demo", "press")
+spawn("wall_button", 15,17,2, "wall_button_4")
+	:addConnector("toggle", "quickDialog_simple", "clickOgre")
+spawn("script_entity", 15,19,1, "quickDialog_simple")
+	:setSource("--\
+-- Example on how to build your own dialog\
+-- \
+-- This example uses all features:\
+--  * Shows portrait of the npc\
+--  * Defines buttons with custom text\
+--  * Uses a callback function to process the result\
+--\
+\
+s_challenge = \"Right, make me!\"\
+s_agree = \"I'm going already!\"\
+\
+function clickOgre()\
+\9local s_npcId = \"\" -- \"npc_guard\"\
+\9local s_text = [[Hey, you!\
+\9\9\9\9\9What are you doing here? Why are you pressing\
+\9\9\9\9\9this button?\
+\
+\9\9\9\9\9You're not supposed to be here.\
+\9\9\9\9\9Leave while you can!]]\
+\
+\9local s_dlgId = Dialog.new(s_text, s_agree, nil) --s_npcId)\
+\9Dialog.addButton(s_dlgId, s_challenge)\
+\9Dialog.activate(s_dlgId, ogreCallBack)\
+end\
+\
+function ogreCallBack(s_caption)\
+\9if s_caption == s_challenge then\
+\9\9hudPrint(\"Oh oh... Now you've done it!\")\
+\9end\
+\9if s_caption == s_agree then\
+\9\9hudPrint(\"Party is full of chickens!\")\
+\9end\
+end")
+spawn("wall_button", 16,17,2, "wall_button_5")
+	:addConnector("toggle", "quickDialog_yesno", "yesNoQuestion")
+spawn("script_entity", 16,19,1, "quickDialog_yesno")
+	:setSource("--\
+-- Example on how to build your own yes/now dialog\
+-- \
+\
+s_challenge = \"Right, make me!\"\
+s_agree = \"I'm going already!\"\
+\
+function yesNoQuestion()\
+\9local s_text = [[Hey, you! Are you brave?]]\
+\
+\9local s_dlgId = Dialog.quickYesNoDialog(s_text, answerCallBack, nil)\
+\9Dialog.activate(s_dlgId, answerCallback)\
+end\
+\
+function answerCallBack(s_caption)\
+\9if s_caption == \"Yes\" then\
+\9\9hudPrint(\"Yeah, right...\")\
+\9end\
+\9if s_caption == \"No\" then\
+\9\9hudPrint(\"Run for your life! There's killer snail after you\")\
+\9end\
+end")

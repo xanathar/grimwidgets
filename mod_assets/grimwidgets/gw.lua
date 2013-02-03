@@ -14,6 +14,7 @@ function _drawGUI(g)
 	_processKeyHooks(g)
 	_drawElements(g,'gui')
 	gw_events.processEvents(g)
+
 end
 
 function _drawInventory(g,champ)
