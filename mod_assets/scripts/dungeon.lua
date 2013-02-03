@@ -21,9 +21,9 @@ mapDesc([[
 ################################
 ################################
 ##############...###############
-##############.....#############
-##############.....#############
-##############...###############
+##############......############
+##############......############
+##############....##############
 ################################
 ################################
 ################################
@@ -415,9 +415,9 @@ function main()\
    fw.debug.enabled = false\
    fwInit:close()\
 end")
-spawn("dungeon_door_portcullis", 17,16,3, "dungeon_door_portcullis_1")
-spawn("dungeon_door_portcullis", 17,15,3, "dungeon_door_portcullis_2")
-spawn("snail", 18,15,0, "snail_1")
+spawn("dungeon_door_portcullis", 18,16,3, "dungeon_door_portcullis_1")
+spawn("dungeon_door_portcullis", 18,15,3, "dungeon_door_portcullis_2")
+spawn("snail", 19,15,0, "snail_1")
 spawn("wall_button", 14,14,3, "wall_button_3")
 	:addConnector("toggle", "new_champion", "newChampion")
 spawn("dungeon_wall_text", 14,14,3, "dungeon_wall_text_2")
@@ -583,4 +583,18 @@ function answerCallBack(s_caption)\
 \9if s_caption == \"No\" then\
 \9\9hudPrint(\"Run for your life! There's killer snail after you\")\
 \9end\
+end")
+spawn("wall_button", 17,17,2, "wall_button_6")
+	:addConnector("toggle", "MergedDemo", "drawExample")
+spawn("script_entity", 17,19,0, "MergedDemo")
+	:setSource("function drawExample()\
+\
+\9gw.setDefaultColor({200,200,200,255})\
+\9gw.setDefaultTextColor({255,255,255,255})\
+\
+\9-- background yellow image\
+\9local rect1 = Dialog.create(100, 50, 600, 350)\
+\9Dialog.activate(rect1.id)\
+\9rect1.color = {255, 255, 0}\
+\9gw.addElement(rect1, 'gui')\
 end")

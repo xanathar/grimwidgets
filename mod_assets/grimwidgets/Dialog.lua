@@ -83,9 +83,11 @@ function activate(s_id, f_callBack)
 		print("Calling dialog.activate() with wrong number and/or type of parameters.")
 	end
 
-	-- We need to create a dummy gw_element. It will be called from gw framework.
+	-- We need to create a gw_element. It will be called from gw framework.
 	-- It will not draw anything on its own, just will call onDraw() method. It
 	-- will be removed when deactivate() method is called.
+
+	-- x, y, width, height all set to -1 (set it automatically)
 	local h_glue = create(-1, -1, -1, -1)
 	gw.addElement(h_glue, 'gui')
 end
@@ -230,9 +232,6 @@ function calculateDimensions(t_dlg)
 	n_windowHeight = n_windowHeight + 16
 	n_windowHeight = n_windowHeight + getButtonMaxLines(t_dlg.buttons) * n_dialogPixelHeight
 	
-	-- Round width and height to the nearest higher whole factor of 64
-	n_windowWidth = math.ceil(n_windowWidth / 64) * 64
-	n_windowHeight = math.ceil(n_windowHeight / 64) * 64
 	return n_windowWidth, n_windowHeight
 end
 
@@ -246,6 +245,17 @@ function onDraw(h_gwelement, h_gui)
 		local n_windowHeight = 0
 		n_windowWidth, n_windowHeight = calculateDimensions(t_dlg)
 		
+		if (h_gwelement.width ~= -1) then
+		   n_windowWidth = h_gwelement.width
+		end
+		if (h_gwelement.height ~= -1) then
+		   n_windowHeight = h_gwelement.height
+		end
+
+		-- Round width and height to the nearest higher whole factor of 64
+		n_windowWidth = math.ceil(n_windowWidth / 64) * 64
+		n_windowHeight = math.ceil(n_windowHeight / 64) * 64
+
 		-- Detemine if the width is a multiple of 128 or 64 (needed for drawing the window in right size); yields either 64 or 128
 		local n_multipleWidth = 128 - (64 * ((n_windowWidth / 64) % 2))
 		local n_multipleHeight = 128 - (64 * ((n_windowHeight / 64) % 2))
