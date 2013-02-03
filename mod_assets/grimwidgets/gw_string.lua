@@ -58,21 +58,29 @@ function split(str, delim, maxNb)
 end
 
 function wrap(text,width,size)
-	local words = split(text,' ')
+	local paragraphs = split(text,"\n")
 	local lines = {''}
 	local len = 0
-	local line = 1
-	for i,word in ipairs(words) do
-		len = len + stringWidth(word,size)
-		if len > width then
-			line = line + 1
-			lines[line] = ''
-			len = stringWidth(word,size)
-		end
-        if string.len(lines[line]) > 0 then
-		    lines[line] = lines[line]..' '..word
-		else
-			lines[line] = word
+	local line = 0
+	
+	for _,p in ipairs(paragraphs) do
+		line = line +1
+		local words = split(p,' ')
+	
+		for i,word in ipairs(words) do
+			len = len + stringWidth(word,size)
+			if len > width then
+				line = line + 1
+				lines[line] = ''
+				len = stringWidth(word,size)
+				lines[line] = word
+			else
+		        if lines[line] and lines[line] ~= '' then
+				    lines[line] = lines[line]..' '..word
+				else
+					lines[line] = word
+				end
+			end
 		end
 	end
 	return lines
@@ -97,5 +105,4 @@ function drawElementText(elem,ctx)
         ctx.drawText(elem.text, elem.x + 5, elem.y + 13 + 5, 20)
     end
 end
-
 ]])

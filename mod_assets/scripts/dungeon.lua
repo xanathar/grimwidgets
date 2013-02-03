@@ -85,9 +85,11 @@ end\
 \
 function debugGrid()\
 \9grid(100)\
+end\
+\
+function disableGrid()\
+\9grid()\
 end")
-spawn("wall_button", 14,15,3, "wall_button_1")
-	:addConnector("toggle", "debug", "debugGrid")
 spawn("dungeon_wall_text", 14,15,3, "dungeon_wall_text_1")
 	:setWallText("Enable mouse grid")
 spawn("gw_event", 16,16,2, "gw_event_1")
@@ -215,14 +217,16 @@ function addSpell(book,spell)\
 \9page1 = book:getChild('page1')\
 \9\
 \9local line = page1:addChild('element',spell.name,0,20,200,30)\
-\9line.marginTop = 10\
+\9\
 \9line.marginLeft = 20\
 \
 \9line:setRelativePosition('below_previous')\
-\9line:addChild('button',spell.name..'_memo',0,0,'Memorize')\
-\9\
+\9local bmemorize = line:addChild('button',spell.name..'_memo',0,0,' ')\
+\9bmemorize.width = 10\
+\9bmemorize.color = {0,0,0,100}\
 \9local text = line:addChild('text',spell.name..'_text',0,0,300,20,spell.uiname)\
 \9text.marginLeft = 10\
+\9text.textColor = {150,150,150,200}\
 \9text:setRelativePosition('after_previous')\
 \9\
 \9text.onClick = _turnPage\
@@ -230,7 +234,7 @@ function addSpell(book,spell)\
 \9local page2 = book:getChild('page2')\
 \9\
 \9local spellDescr = page2:addChild('element','runes_'..spell.name,0,0,350,400)\
-\9spellDescr:activate()\
+\9spellDescr:deactivate()\
 \9text.spellDescr = spellDescr\
 \9\
 \9local runes = spellDescr:addChild('element','runes_'..spell.name,0,0,240,240)\
@@ -254,7 +258,7 @@ function addSpell(book,spell)\
 \9\
 end\
 \
-function _turnPage(self,ctx)\
+function _turnPage(self)\
 \9for i, elem in ipairs(self:getAncestor():getChild('page2').children) do\
 \9\9elem:deactivate()\
 \9end\
@@ -325,7 +329,7 @@ function drawExample()\
 \9gw.setDefaultTextColor({255,255,255,255})\
 \
 \9-- background yellow image\
-\9local rect1 = gw_rectangle.create('rect1', 100, 50, 600, 300)\
+\9local rect1 = gw_rectangle.create('rect1', 100, 50, 600, 350)\
 \9rect1.color = {255, 255, 0}\
 \9gw.addElement(rect1, 'gui')\
 \9\
@@ -376,8 +380,8 @@ function drawExample()\
 \9rect2.color={0, 0, 255}\
 \9rect2:setRelativePosition{'left','top'}\
 \9\
-\9local rect3 = rect2:addChild('rectangle','rect3', 0, 0, 30, 30) -- rect3 in rect2, which is in rect1\
-\9rect3:setRelativePosition{'middle','center'}\
+\9local rect3 = rect2:addChild('rectangle','rect3', 0, 0, 30, 40) -- rect3 in rect2, which is in rect1\
+\9rect3:setRelativePosition{'top','left'}\
 \9rect3.marginTop = 5\
 \9rect3.marginLeft = 10\
 \9rect3.color = {255, 0, 0}\
@@ -385,10 +389,10 @@ function drawExample()\
 \9\9print('rectangles can be clicked too')\
 \9end\
 \
-\9local text1 = rect1:addChild('text','text1',0,0,200,100)\
+\9local text1 = rect1:addChild('text','text1',0,0,200,180)\
 \9text1:setRelativePosition{'bottom','center'}\
 \9\
-\9text1.text = \"Long text should be wrapped automatically. Does it work?\"\
+\9text1.text = \"Long text should be wrapped automatically. Does\\nit\\nwork? Some more words here for testing purposes\"\
 \9text1.textColor = {0,255,255}\
 \9\
 \9local closeButton = rect1:addChild('button3D','close_rect_1',20,20,'X',30,20)\
@@ -422,336 +426,68 @@ in your party! The more the merrier!")
 spawn("script_entity", 12,14,2, "new_champion")
 	:setSource("function newChampion()\
 \9newguy = {\
-\9\9name = \"Rookie\",    -- just a name\
-\9\9race = \"Insectoid\", -- Must be one of: Human, Minotaur, Lizardman, Insectoid\
-\9\9class = \"Fighter\",  -- Must be one of: Figther, Rogue, Mage or Ranger\
-\9\9sex = \"male\", \9\9-- Must be one of: male, female\
-\9\9level = 3\
+\9\9name = \"Taghor\",    -- just a name\
+\9\9race = \"Insectoid\", -- must be one of: Human, Minotaur, Lizardman, Insectoid\
+\9\9class = \"Mage\",     -- must be one of: Figther, Rogue, Mage or Ranger\
+\9\9sex = \"male\", \9\9-- must be one of: male, female\
+\9\9level = 3,          -- character's level\
+\9\9portrait = \"mod_assets/textures/portraits/taghor.dds\", -- must be 128x128 dds file\
+\9\9\
+\9\9-- allowed skills: air_magic, armors, assassination, athletics, axes, daggers, \
+\9\9-- dodge, earth_magic, fire_magic, ice_magic, maces, missile_weapons, spellcraft,\
+\9\9-- staves, swords, throwing_weapons and unarmed_combat\
+\9\9skills = { fire_magic = 10, earth_magic = 20, air_magic = 30, ice_magic = 40 },\
+\9\9\9\9\
+\9\9-- allowed traits: aggressive, agile, athletic, aura, cold_resistant, evasive, \
+\9\9-- fire_resistant, fist_fighter, head_hunter, healthy, lightning_speed,\
+\9\9-- natural_armor, poison_resistant, skilled, strong_mind, tough\
+\9\9-- Traits must be specified in quotes.\
+\9\9-- Typically each character has 2 traits, but you can specify more or less.\
+\9\9traits = { \"lightning_speed\", \"tough\", \"skilled\", \"head_hunter\", \"aura\" },\
+\9\9\
+\9\9health = 80, \9\9  -- Maximum health\
+\9\9current_health = 70,  -- Current health\
+\9\9\
+\9\9energy = 300,         -- Maximum energy\
+\9\9current_energy = 250, -- Current energy\
+\
+\9\9strength = 12,        -- Strength\
+\9\9dexterity = 11,       -- Dexterity\
+\9\9vitality = 10,        -- Vitality\
+\9\9willpower = 9,        -- Willpower\
+\9\9\
+\9\9protection = 25,      -- protection\
+\9\9evasion = 30, \9\9  -- evasion\
+\9\9\9\9\
+\9\9-- Resist fire/cold/poison/shock (remember that those values will be modified by bonuses\
+\9\9-- from fire, cold, poison or shock magic\
+\9\9resist_fire = 11,\
+\9\9resist_cold = 22,\
+\9\9resist_poison = 33,\
+\9\9resist_shock = 44,\
+\9\9\
+\9\9-- items: Notation item_name = slot. Slots numbering: 1 (head), 2 (torso), 3 (legs), 4 (feet), \
+\9\9-- 5 (cloak), 6 (neck), 7 (left hand), 8 (right hand), 9 (gaunlets), 10 (bracers), 11-31 (backpack\
+\9\9-- slots) or 0 (any empty slot in backpack)\
+\9\9-- Make sure you put things in the right slot. Wrong slot (e.g. attempt to try boots on head)\
+\9\9-- will make the item spawn to fail.\
+\9\9items = { battle_axe = 0, lurker_hood = 1, lurker_vest = 2, lurker_pants = 3, lurker_boots = 4 },\
+\9\9\
+\9\9-- food: 0 (starving) to 1000 (just ate the whole cow)\
+\9\9food = 100\
+\9\9\
 \9}\
-\9\
-\9addChampion(newguy)\
 \
+\9-- Call addChampion method. It will add new guy to the party if there are suitable slots and will\
+\9-- display a GUI prompt selecting a party member to drop if your party is already 4 guys\
+\9gw_party.addChampion(newguy)\
 end\
 \
-function addChampion(newguy)\
-\
-\9-- background border\
-\9local dialog = gw_rectangle.create('dialog', 100, 50, 660, 280)\
-\9dialog.color = {128, 128, 128, 200}\
-\9gw.addElement(dialog, 'gui')\
-\
-\9local text1 = dialog:addChild('rectangle','text1', 10, 10, 640, 50)\
-\9\
-\9text1.text = newguy.name .. \" would like to join your party, but since there is already four of you\"\
-\9\9..\", someone else would have to go. Please pick who you want to leave behind:\"\
-\9text1.color = {255,255,255}\
-\9dialog:addChild(text1)\
-\
-\9for i=1,4 do\9\
-\9\9local info = showChampion(i, party:getChampion(i))\
-\9\9dialog:addChild(info)\
-\9\9info.x = 10 + (i-1)*130\
-\9\9info.y = 70\
-\9\9info.onPress = function(self) chosen(i, newguy) end\
-\
-\9\9-- we could use info:setRelativePosition({'after','info'..(i-1)}) here,\
-\9\9-- but that would make the rectangles to touch each other without any\
-\9\9-- borders or margins\
-\9end\
-\9\
-\9local info = showCandidate(newguy)\
-\9dialog:addChild(info)\
-\9info.x = 10 + 4*130\
-\9info.y = 70\
-\9info.onPress = function(self) chosen(5, newguy) end\
-\
-end\
-\
-function chosen(id, newguy)\
-\9print(\"Chosen \"..id)\
-\9\
-\9-- someone from the old party has to go\
-\9if (id >= 1 and id <= 4) then\
-\9\9setNewChampion(id, newguy)\
-\9end\
-\9\
-\9-- the new guy has to go\
-\9if (id == 5) then\
-\9\9local tmp\
-\9\9if newguy.sex == \"male\" then\
-\9\9\9tmp = \"him\"\
-\9\9else\
-\9\9\9tmp = \"her\"\
-\9\9end\
-\9\9hudPrint(newguy.name .. \" turns back and goes away. You never seen \"..tmp..\" again.\")\
-        gw.removeElement('dialog', 'gui')\
-\9end\
-end\
-\
-function dropAllItems(champion)\
-\9for slot=1,31 do\
-\9\9local item = champion:getItem(slot)\
-\9\9if item then\
-\9\9\9local saveditem = grimq.saveItem(item)\
-\9\9\9champion:removeItem(slot)\
-\9\9\9grimq.loadItem(saveditem, party.level, party.x, party.y, party.facing, saveditem.id)\9\9\9\
-\9\9end\9\
-\9end\
-end\
-\
-function setNewChampion(id, newguy)\
-\9\
-\9local x = party:getChampion(id)\
-\9local old_name = x:getName()\
-\9x:setName(newguy.name)\
-\9x:setRace(newguy.race)\
-\9x:setClass(newguy.class)\
-\9x:setSex(newguy.sex)\
-\9x:setEnabled(true)\
-\9\
-\9dropAllItems(x)\
-\9\
-\9hudPrint(newguy.name..\" joins your party. \"..old_name.. \" will be remembered as a good fellow.\")\
-\9gw.removeElement('dialog', 'gui')\
-\
-end\
-\
-function showChampion(id, champion)\
-\9local info = gw_rectangle.create(\"info\"..id, 0, 0, 120, 200)\
-\9info.color = {255,255,255}\
-\9info.text = champion:getName()\
-\9\
-\9local details = gw_rectangle.create(\"details\"..id, 0, 50, 120, 150)\
-\9details.color = { 192, 192, 255, 255}\
-\9info:addChild(details)\
-\9details.text = champion:getRace() .. \"\\n\" \
-\9            .. champion:getClass() .. \"\\n\"\
-\9            .. champion:getSex() .. \"\\n\"\
-\9\9\9\9.. champion:getLevel() .. \" level\"\
-\9details.dontwrap = true\
-\9            \9\
-\9return info\
-end\
-\
-function showCandidate(champion)\
-\9local info = gw_rectangle.create(\"info5\", 0, 0, 120, 200)\
-\9info.color = {230, 255, 230}\
-\9info.text = champion.name\
-\9\
-\9local details = gw_rectangle.create(\"details5\", 0, 50, 120, 150)\
-\9details.color = { 192, 192, 255, 255}\
-\9info:addChild(details)\
-\9details.text = champion.race .. \"\\n\" \
-\9            .. champion.class .. \"\\n\"\
-\9            .. champion.sex .. \"\\n\"\
-\9\9\9\9.. champion.level .. \" level\"\
-\9details.dontwrap = true\
-\9return info\
-end")
+")
 spawn("lightning_rod", 14,14,3, "lightning_rod_1")
 spawn("sack", 15,15,3, "sack_1")
 spawn("rock", 15,15,1, "rock_1")
 spawn("rock", 15,15,0, "rock_2")
-spawn("script_entity", 19,26,3, "gw_element")
-	:setSource("function create(id, x, y, width, height)\
-    local elem = {}\
-    elem.id = id\
-\9elem.x = x\
-\9elem.y = y\
-\9elem.marginLeft=0\
-\9elem.marginTop=0\
-\9elem.width = width\
-\9elem.height = height\
-\9elem.parent = nil\
-\9elem.children = {}\
-\9elem.addChild = _addChild\
-\9elem.drawSelf = _drawNone\
-\9elem.draw = _drawAll\
-\9elem.onPress = nil\
-\9elem.onClick = nil\
-\9elem.firstMousePressPoint = nil\
-\9elem.setRelativePosition = _setRelativePosition\
-\9elem.getChild = _getChild\
-\9elem.moveAfter = _moveAfter\
-\9elem.moveBelow = _moveBelow\
-\9elem.color = gw.getDefaultColor()\
-\9elem.textColor = gw.getDefaultTextColor()\
-\9elem.textSize = 'small'\
-\9elem.getAncestor = _getAncestor\
-\9elem.deactivate = _deactivate\
-\9elem.activate = _activate\
-\9elem.active = true\
-\9return elem\
-end\
-\
-function _drawNone()\
-end\
-\
-function _deactivate(self)\
-\9self.active = false\
-end\
-\
-function _activate(self)\
-\9self.active = true\
-end\
-\
--- returns the 1st parent in hierarchy or self if parent is not defined\
-function _getAncestor(self)\
-\9if type(self.parent) == 'table' then\
-\9\9return self.parent:getAncestor()\
-\9end\
-\9return self\
-end\
-\
--- draws whole element, including all its children\
-function _drawAll(self, ctx,champion)\
-\9if not self.active then return end\
-\9if (self.color) then\
-    \9ctx.color(self.color[1], self.color[2], self.color[3], self.color[4])\
-\9end\
-\9if self.onDraw and self:onDraw(ctx,champion) == false then\
-\9\9return\
-\9end\9\
-\9if self.parent then\
-\9\9self.x = self.x + self.parent.x\
-\9\9self.y = self.y + self.parent.y \
-\9end\
-\9self.x = self.x + self.marginLeft\
-\9self.y = self.y + self.marginTop\
-\
-\9\
-\9self.drawSelf(self, ctx)\
-\9if (self.onPress ~= nil) and (ctx.button(self.id, self.x, self.y, self.width, self.height)) then\
-\9\9self:onPress()\
-\9end\
-\9gw_string.drawElementText(self,ctx)\
-\
-\9-- we manage onClick ourselves\
-\9if (ctx.mouseDown(0)) then\
-\9\9if (self.firstMousePressPoint == nil) and gw_util.isPointInBox(ctx.mouseX, ctx.mouseY, self.x, self.y, self.width, self.height) then\
-\9\9\9self.firstMousePressPoint = { x = ctx.mouseX, y = ctx.mouseY }\
-\9\9end\
-\9else\
-\9\9if (self.firstMousePressPoint ~= nil) then\
-\9\9\9if (self.onClick ~= nil) and (gw_util.isPointInBox(ctx.mouseX, ctx.mouseY, self.x, self.y, self.width, self.height)) then\
-\9\9\9\9self:onClick()\
-\9\9\9end\
-\9\9\9self.firstMousePressPoint = nil\
-\9\9end\
-\9end\
-\
-\9for key,child in pairs(self.children) do\
-\9\9child:draw(ctx) -- draw child element\
-\9end\
-\9\
-\9if self.parent then\
-\9\9self.x = self.x - self.parent.x\
-\9\9self.y = self.y - self.parent.y \
-\9end\
-\9self.x = self.x - self.marginLeft\
-\9self.y = self.y - self.marginTop\9\
-end\
-\
-function _addChild(parent, child,id,x,y,width,height,p1,p2,p3)\
-\9if type(parent) ~= 'table' then\
-\9\9print('Invalid parent, use elem:addChild() instead of elem.addChild')\
-\9\9return {}\
-\9end \
-\9if type(child) == 'string' then\
-\9\9child = gw.create(child,id,x,y,width,height,p1,p2,p3)\
-\9end \
-\
-\9table.insert(parent.children, child)\
-\9child.parent = parent\
-\9return child\
-end\
-\
-function _getChild(self,id)\
-\9for _,child in ipairs(self.children) do\
-\9\9if child.id == id then\
-\9\9\9return child\
-\9\9end\
-\9end\
-end\
-\
-\
--- sets element's relative position to parent\
--- positions can be a string or table\
--- possible values: top,middle,bottom,left,center,right\
--- example \
-function _setRelativePosition(e,positions)\
-\9if e.parent == nil then\
-\9\9print(\"Cant's set relative position to element without a parent\")\
-\9\9return\
-\9end\
-\9if type(positions) == 'string' then\
-\9\9positions = {positions}\
-\9end\
-\9if (positions[1] == 'after') then\
-\9\9local elementId = positions[2]\
-\9\9local elem = e.parent:getChild(elementId)\
-\9\9if not elem then\
-\9\9\9print('Child element '..elementId..' not found')\
-\9\9\9return\
-\9\9end\
-\9\9e:moveAfter(elem)\
-\9\9return\
-\9end\
-\9if (positions[1] == 'after_previous') then\
-\9\9local elem = e.parent.children[#e.parent.children - 1]\
-\9\9if not elem then\
-\9\9\9return\
-\9\9end\
-\9\9e:moveAfter(elem)\
-\9\9return\
-\9end\9\9\9\
-\9if (positions[1] == 'below') then\
-\9\9local elementId = positions[2]\
-\9\9local elem = e.parent:getChild(elementId)\
-\9\9if not elem then\
-\9\9\9print('Child element '..elementId..' not found')\
-\9\9\9return\
-\9\9end\
-\9\9e:moveBelow(elem)\
-\9\9return\
-\9end\9\
-\9if (positions[1] == 'below_previous') then\
-\9\9local elem = e.parent.children[#e.parent.children - 1]\
-\9\9if not elem then\
-\9\9\9return\
-\9\9end\
-\9\9e:moveBelow(elem)\
-\9\9return\
-\9end\9\9\
-\9\
-\9positions = help.tableToSet(positions)\
-\9if positions.center then\
-\9\9e.x = math.ceil((e.parent.width - e.width) / 2) \
-\9end\
-\9if positions.left then\
-\9\9e.x = 0\
-\9end\9\
-\9if positions.right then\
-\9\9e.x = e.parent.width - e.width \
-\9end\9\9\
-\9if positions.top then\
-\9\9e.y = 0\
-\9end\
-\9if positions.bottom then\
-\9\9e.y =  e.parent.height - e.height \
-\9end\9\9\9\
-\9if positions.middle then\
-\9\9e.y = math.ceil((e.parent.height - e.height) / 2)\
-\9end\9\
-\9\
-end\
-\
-function _moveAfter(self,elem)\
-\9\9self.x = elem.x + elem.width + elem.marginLeft\
-\9\9self.y = elem.y\
-end\
-\
-function _moveBelow(self,elem)\
-\9\9self.x = elem.x \
-\9\9self.y = elem.y + elem.height + elem.marginTop\
-end")
+spawn("lever", 14,15,3, "lever_1")
+	:addConnector("activate", "debug", "debugGrid")
+	:addConnector("deactivate", "debug", "disableGrid")

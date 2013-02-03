@@ -203,6 +203,5 @@ function _moveBelow(self,elem)
 		self.x = elem.x 
 		self.y = elem.y + elem.height + elem.marginTop
 end
-
 ]])
 
