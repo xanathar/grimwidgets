@@ -11,13 +11,8 @@ tDialog = {
 -- method called. That is enough for now to plug Dialog into grimwidgets.
 function create(x, y, width, height)
 	local elem = gw_element.create("Dialog", x, y, width, height)
-	elem.drawSelf = _draw
+	elem.drawSelf = onDraw
 	return elem
-end
-
--- just a wrapper method. It is a called by grimwidgets and calls onDraw() method.
-function _draw(self, ctx)
-	onDraw(ctx)
 end
 
 function new(s_text, s_buttonText, s_npc, s_id)
@@ -94,7 +89,6 @@ function activate(s_id, f_callBack)
 	local h_glue = create(-1, -1, -1, -1)
 	gw.addElement(h_glue, 'gui')
 end
-
 
 function deactivate()
 	-- remove any active dialog (if any)
@@ -194,57 +188,63 @@ function getDialog(s_id)
 	end
 end
 
-function onDraw(h_gui)
+function calculateDimensions(t_dlg)
+	-- Define bunch of constants we'll use while drawing
+	local n_minWindowWidth = 80
+	local n_dialogPixelWidth = 8.5
+	local n_dialogPixelHeight = 24
+	local n_portraitSize = 128
+
+	-- Calculate window width, starting with minimum width and adding pixels depending on content
+	local n_windowWidth = n_minWindowWidth
+
+	-- Add pixels to width for every character in the widest line of the text.
+	-- But if there's a npc portrait take the largest of either: 1) text from first few lines + pictures width or 2) width of the widest line of all lines
+	if t_dlg.npc and NPC.Exists(t_dlg.npc) then
+		n_windowWidth = n_windowWidth + math.max(charWidth(t_dlg.text) * n_dialogPixelWidth, charWidth(t_dlg.text, 6) * n_dialogPixelWidth + n_portraitSize + 8)
+	else
+		n_windowWidth = n_windowWidth + charWidth(t_dlg.text) * n_dialogPixelWidth
+	end
+
+	-- Check if the buttons can fit and adjust width if needed
+	local n_buttonWidth = -20
+	for _, n_btn in pairs(t_dlg.buttons) do			
+		n_buttonWidth = n_buttonWidth + getButtonWidth(charWidth(n_btn)) + 20
+	end
+	n_windowWidth = math.max(n_windowWidth, n_minWindowWidth + n_buttonWidth)
+
+
+	-- Calculate window height, starting with minimum height and adding pixels depending on content
+	local n_windowHeight = 80
+	-- Add pixels if an npc is talking, but only if there are less than 6 lines of text
+	if t_dlg.npc and NPC.Exists(t_dlg.npc) and NPC.GetAttr(t_dlg.npc, "Portrait") and countLines(t_dlg.text) < 6 then
+		n_windowHeight = n_windowHeight + n_portraitSize + 30		
+		-- Add 24 pixels to height for each line, but the first 5 lines are free
+		n_windowHeight = n_windowHeight + math.max(0, (countLines(t_dlg.text) - 6) * n_dialogPixelHeight)
+	else
+		n_windowHeight = n_windowHeight + math.max(0, countLines(t_dlg.text) * n_dialogPixelHeight)
+	end
+
+
+	-- Calculate needed height for buttons. First the basic height, then add extra height for evert line of buttontext
+	n_windowHeight = n_windowHeight + 16
+	n_windowHeight = n_windowHeight + getButtonMaxLines(t_dlg.buttons) * n_dialogPixelHeight
+	
+	-- Round width and height to the nearest higher whole factor of 64
+	n_windowWidth = math.ceil(n_windowWidth / 64) * 64
+	n_windowHeight = math.ceil(n_windowHeight / 64) * 64
+	return n_windowWidth, n_windowHeight
+end
+
+function onDraw(h_gwelement, h_gui)
 	if tDialog.activeDialog then		
 		local t_dlg = getDialog(tDialog.activeDialog)
 		local s_response = nil
-		
-		-- Define bunch of constants we'll use while drawing
-		local n_minWindowWidth = 80
-		local n_dialogPixelWidth = 8.5
-		local n_dialogPixelHeight = 24
-		local n_portraitSize = 128
 		local n_windowTileSize = 128
-
-		-- Calculate window width, starting with minimum width and adding pixels depending on content
-		local n_windowWidth = n_minWindowWidth
-
-		-- Add pixels to width for every character in the widest line of the text.
-		-- But if there's a npc portrait take the largest of either: 1) text from first few lines + pictures width or 2) width of the widest line of all lines
-		if t_dlg.npc and NPC.Exists(t_dlg.npc) then
-			n_windowWidth = n_windowWidth + math.max(charWidth(t_dlg.text) * n_dialogPixelWidth, charWidth(t_dlg.text, 6) * n_dialogPixelWidth + n_portraitSize + 8)
-		else
-			n_windowWidth = n_windowWidth + charWidth(t_dlg.text) * n_dialogPixelWidth
-		end
-
-		-- Check if the buttons can fit and adjust width if needed
-		local n_buttonWidth = -20
-		for _, n_btn in pairs(t_dlg.buttons) do			
-			n_buttonWidth = n_buttonWidth + getButtonWidth(charWidth(n_btn)) + 20
-		end
-		n_windowWidth = math.max(n_windowWidth, n_minWindowWidth + n_buttonWidth)
-
-
-		-- Calculate window height, starting with minimum height and adding pixels depending on content
-		local n_windowHeight = 80
-		-- Add pixels if an npc is talking, but only if there are less than 6 lines of text
-		if t_dlg.npc and NPC.Exists(t_dlg.npc) and NPC.GetAttr(t_dlg.npc, "Portrait") and countLines(t_dlg.text) < 6 then
-			n_windowHeight = n_windowHeight + n_portraitSize + 30		
-			-- Add 24 pixels to height for each line, but the first 5 lines are free
-			n_windowHeight = n_windowHeight + math.max(0, (countLines(t_dlg.text) - 6) * n_dialogPixelHeight)
-		else
-			n_windowHeight = n_windowHeight + math.max(0, countLines(t_dlg.text) * n_dialogPixelHeight)
-		end
-
-
-		-- Calculate needed height for buttons. First the basic height, then add extra height for evert line of buttontext
-		n_windowHeight = n_windowHeight + 16
-		n_windowHeight = n_windowHeight + getButtonMaxLines(t_dlg.buttons) * n_dialogPixelHeight
-
 		
-		-- Round width and height to the nearest higher whole factor of 64
-		n_windowWidth = math.ceil(n_windowWidth / 64) * 64
-		n_windowHeight = math.ceil(n_windowHeight / 64) * 64
+		local n_windowWidth = 0
+		local n_windowHeight = 0
+		n_windowWidth, n_windowHeight = calculateDimensions(t_dlg)
 		
 		-- Detemine if the width is a multiple of 128 or 64 (needed for drawing the window in right size); yields either 64 or 128
 		local n_multipleWidth = 128 - (64 * ((n_windowWidth / 64) % 2))
@@ -253,6 +253,20 @@ function onDraw(h_gui)
 		-- Calculate offset of the window (position it in the middle of the screen)
 		local n_windowOffsetX = (h_gui.width - n_windowWidth) / 2
 		local n_windowOffsetY = (h_gui.height - n_windowHeight) / 2
+
+		-- Update gw_element if it was set to auto
+		if (h_gwelement.x == -1) then
+		   h_gwelement.x = n_windowOffsetX
+		end
+		if (h_gwelement.y == -1) then
+		   h_gwelement.y = n_windowOffsetY
+		end
+		if (h_gwelement.width == -1) then
+		   h_gwelement.width = n_windowWidth
+		end
+		if (h_gwelement.height == -1) then
+		   h_gwelement.height = n_windowHeight
+		end
 
 		-- Draw Window in tiles
 		local n_maxX = math.floor(n_windowWidth / n_windowTileSize) - 1
