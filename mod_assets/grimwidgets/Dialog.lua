@@ -1,8 +1,10 @@
 LoadModule("Dialog",[[
 
+
+
 tDialog = {
 	dialogs = {},			-- Contrains definition of all defined dialogs
-	activeDialog = nil,		-- ID of dialog currently on screen
+--	activeDialog = nil,		-- ID of dialog currently on screen
 	startedAt = nil,		-- Time_played the dialog was first shown
 }
 
@@ -12,6 +14,14 @@ tDialog = {
 function create(x, y, width, height)
 	local elem = gw_element.create("Dialog", x, y, width, height)
 	elem.drawSelf = onDraw
+	elem.dialog = { id = Util.String_GenerateUUID("dlg_"),
+		        text = "",
+			buttons = {},
+			npc = nil,
+			callBack = nil}
+	table.insert(tDialog.dialogs, s_newDialog)
+	tDialog.startedAt = getStatistic("play_time")
+
 	return elem
 end
 
@@ -62,46 +72,40 @@ function activate(s_id, f_callBack)
 
 	-- Check parameters; mandatory and/or type checking
 	if type(s_id) == "string" and (f_callBack == nil or type(f_callBack)=="function") then
-	
-		-- Check if there already is an acive dialog
-		if tDialog.activeDialog == nil then
-		
-			-- Get dialog definition
-			local t_dlg = getDialog(s_id)
-			if t_dlg then
-			
-				-- Make fetched dialog the active dialog
-				t_dlg.callBack = f_callBack
-				tDialog.activeDialog = s_id
-				tDialog.startedAt = getStatistic("play_time")
 
-			end
-		else
-			print("Can't activate a dialog while another one is active!")
+		-- Get dialog definition
+		local t_dlg = getDialog(s_id)
+		if t_dlg then
+			
+			-- Make fetched dialog the active dialog
+			t_dlg.callBack = f_callBack
+			tDialog.startedAt = getStatistic("play_time")
+
+			-- We need to create a gw_element. It will be called from gw framework.
+	                -- It will not draw anything on its own, just will call onDraw() method. It
+                        -- will be removed when deactivate() method is called.
+
+                        -- x, y, width, height all set to -1 (set it automatically)
+                        local h_glue = create(-1, -1, -1, -1)
+                        h_glue.dialog = t_dlg
+                        gw.addElement(h_glue, 'gui')
+
 		end
 	else
 		print("Calling dialog.activate() with wrong number and/or type of parameters.")
+		return
 	end
 
-	-- We need to create a gw_element. It will be called from gw framework.
-	-- It will not draw anything on its own, just will call onDraw() method. It
-	-- will be removed when deactivate() method is called.
-
-	-- x, y, width, height all set to -1 (set it automatically)
-	local h_glue = create(-1, -1, -1, -1)
-	gw.addElement(h_glue, 'gui')
 end
 
 function deactivate()
 	-- remove any active dialog (if any)
-	tDialog.activeDialog = nil
 	tDialog.startedAt = nil
 
 	-- remove active hooks from grimwidgets. Dialog.onDraw() method will no longer
 	-- be called
-	gw.removeElement('Dialog', 'gui')
+	gw.removeElement("Dialog", 'gui')
 end
-
 
 function quickYesNoDialog(s_text, f_callBack, s_npc)
 
@@ -159,13 +163,12 @@ end
 
 
 function isActivated(s_id)
-	if id and type(s_id)=="string" then
-		return tDialog.activeDialog == s_id
+	if s_id and type(s_id)=="string" then
+		return gw.getElement(s_id) ~= s_id
 	else
-		return tDialog.activeDialog ~= nil
+		print("isActivated() requires exactly one string parameter (id)")
 	end
 end
-
 
 function getActiveDialogNpc()
 
@@ -236,14 +239,20 @@ function calculateDimensions(t_dlg)
 end
 
 function onDraw(h_gwelement, h_gui)
-	if tDialog.activeDialog then		
-		local t_dlg = getDialog(tDialog.activeDialog)
+
+
+		local t_dlg = h_gwelement.dialog
+		if (t_dlg == nil) then
+		   print("#### dialog is nil")
+		   return
+		end
 		local s_response = nil
 		local n_windowTileSize = 128
 		
 		local n_windowWidth = 0
 		local n_windowHeight = 0
 		n_windowWidth, n_windowHeight = calculateDimensions(t_dlg)
+
 		
 		if (h_gwelement.width ~= -1) then
 		   n_windowWidth = h_gwelement.width
@@ -304,8 +313,12 @@ function onDraw(h_gwelement, h_gui)
 			end
 		end
 
+
 		-- Draw text
+	if (t_dlg.text and string.len(t_dlg.text)) then
 		drawText(h_gui, t_dlg.text, n_windowOffsetX + 40, n_windowOffsetY + 40)
+	end
+
 
 		-- Draw buttons
 		local n_maxLines = math.max(0, getButtonMaxLines(t_dlg.buttons) -1);
@@ -362,8 +375,6 @@ function onDraw(h_gwelement, h_gui)
 			tDialog.startedAt = -1000
 		end
 		
-	end
-
 end
 
 
