@@ -10,22 +10,19 @@ function addChampion(newguy)
 	end
 
 	-- background border
-	local dialog = gw_rectangle.create('dialog', 50, 50, 660, 280)
+	local dialog = Dialog.create(-1, -1, 680, 280)
 	dialog.color = {128, 128, 128, 200}
 	gw.addElement(dialog, 'gui')
 
-	local text1 = dialog:addChild('rectangle','text1', 10, 10, 640, 50)
-	
-	text1.text = newguy.name .. " would like to join your party, but since there is already four of you"
-		..", someone else would have to go. Please pick who will be left behind:"
-	text1.color = {255,255,255}
-	dialog:addChild(text1)
+	dialog.dialog.text = newguy.name .. " would like to join your party, but since there\n" ..
+	        "is already four of you, someone else would have to go.\n" ..
+		"Please pick who will be left behind:"
 
 	for i=1,4 do	
 		local info = showChampion(i, party:getChampion(i))
 		dialog:addChild(info)
-		info.x = 10 + (i-1)*130
-		info.y = 70
+		info.x = 30 + (i-1)*130
+		info.y = 120
 		info.onPress = function(self) chosen(i, newguy) end
 
 		-- we could use info:setRelativePosition({'after','info'..(i-1)}) here,
@@ -35,8 +32,8 @@ function addChampion(newguy)
 	
 	local info = showCandidate(newguy)
 	dialog:addChild(info)
-	info.x = 10 + 4*130
-	info.y = 70
+	info.x = 30 + 4*130
+	info.y = 120
 	info.onPress = function(self) chosen(5, newguy) end
 
 end
@@ -57,8 +54,9 @@ function chosen(id, newguy)
 			tmp = "her"
 		end
 		hudPrint(newguy.name .. " turns back and goes away. You never seen "..tmp.." again.")
-        gw.removeElement('dialog', 'gui')
 	end
+
+	gw.removeElement('Dialog', 'gui')
 end
 
 function dropAllItems(champion)
@@ -202,11 +200,11 @@ function setNewChampion(id, newguy)
 end
 
 function showChampion(id, champion)
-	local info = gw_rectangle.create("info"..id, 0, 0, 120, 200)
+	local info = gw_rectangle.create("info"..id, 0, 0, 120, 150)
 	info.color = {255,255,255}
 	info.text = champion:getName()
 	
-	local details = gw_rectangle.create("details"..id, 0, 50, 120, 150)
+	local details = gw_rectangle.create("details"..id, 0, 50, 120, 100)
 	details.color = { 192, 192, 255, 255}
 	info:addChild(details)
 	details.text = champion:getRace() .. "\n" 
@@ -219,17 +217,17 @@ function showChampion(id, champion)
 end
 
 function showCandidate(champion)
-	local info = gw_rectangle.create("info5", 0, 0, 120, 200)
+	local info = gw_rectangle.create("info5", 0, 0, 120, 150)
 	info.color = {230, 255, 230}
 	info.text = champion.name
 	
-	local details = gw_rectangle.create("details5", 0, 50, 120, 150)
+	local details = gw_rectangle.create("details5", 0, 50, 120, 100)
 	details.color = { 192, 192, 255, 255}
 	info:addChild(details)
 	details.text = champion.race .. "\n" 
 	            .. champion.class .. "\n"
 	            .. champion.sex .. "\n"
-				.. champion.level .. " level"
+		    .. champion.level .. " level"
 	details.dontwrap = true
 	return info
 end
