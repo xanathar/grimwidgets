@@ -200,12 +200,11 @@ function setNewChampion(id, newguy)
 end
 
 function showChampion(id, champion)
-	local info = gw_rectangle.create("info"..id, 0, 0, 120, 150)
-	info.color = {255,255,255}
-	info.text = champion:getName()
+	local info = gw_button3D.create("info"..id, 0, 0, champion:getName(), 120, 50)
+	info.color = {128, 160, 128} -- slightly g
 	
 	local details = gw_rectangle.create("details"..id, 0, 50, 120, 100)
-	details.color = { 192, 192, 255, 255}
+	details.color = { 192, 192, 255, 50}
 	info:addChild(details)
 	details.text = champion:getRace() .. "\n" 
 	            .. champion:getClass() .. "\n"
@@ -217,12 +216,11 @@ function showChampion(id, champion)
 end
 
 function showCandidate(champion)
-	local info = gw_rectangle.create("info5", 0, 0, 120, 150)
-	info.color = {230, 255, 230}
-	info.text = champion.name
+	local info = gw_button3D.create("info5", 0, 0, champion.name, 120, 50 )
+	info.color = {128,128,160}
 	
 	local details = gw_rectangle.create("details5", 0, 50, 120, 100)
-	details.color = { 192, 192, 255, 255}
+	details.color = { 192, 192, 255, 50}
 	info:addChild(details)
 	details.text = champion.race .. "\n" 
 	            .. champion.class .. "\n"

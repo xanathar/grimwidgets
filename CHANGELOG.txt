@@ -1,3 +1,8 @@
+v0.2
+(Thomson)	- Integrated Dialog module from Legends of the Northern Realms
+		  by Mahric. It it still not very clean, but usable. The new textured windows
+		  look simply beautiful.
+
 v0.01
 (JKos)		- Added gw_element.onDraw hook. If the hook returns false the element won't be drawn.
 		- Bug fix: margins didn't not work correctly with position after and below,element_id
