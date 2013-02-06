@@ -4,8 +4,8 @@ fw_addModule('gw_element',[[
 function create(id, x, y, width, height)
     local elem = {}
     elem.id = id
-	elem.x = x
-	elem.y = y
+	elem.x = x or 0
+	elem.y = y or 0
 	elem.marginLeft=0
 	elem.marginTop=0
 	elem.width = width

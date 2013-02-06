@@ -42,6 +42,7 @@ gw_loadModule('gw_text')
 gw_loadModule('gw_string')
 
 gw_loadModule('gw_party')
+gw_loadModule('gw_book')
 
 -- these are modules from LotNR. They use different naming
 -- convention.

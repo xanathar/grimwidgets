@@ -117,6 +117,16 @@ function create(elementType,id,arg1,arg2,arg3,arg4,arg5,arg6)
 	return elementFactory.create(id,arg1,arg2,arg3,arg4,arg5,arg6)
 end
 
+function new(def)
+	local elem = gw.create(def[1])
+	for prop,value in pairs(def) do
+		if (prop ~= 1) then
+			elem[prop] = value		
+		end
+	end
+	return elem
+end
+
 function setDefaultColor(color)
 	defaultColor = color
 end

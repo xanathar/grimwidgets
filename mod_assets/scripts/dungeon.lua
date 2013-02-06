@@ -39,7 +39,7 @@ mapDesc([[
 ################################
 ################################
 ]])
-spawn("starting_location", 14,14,3, "starting_location")
+spawn("starting_location", 15,14,2, "starting_location")
 spawn("torch_holder", 15,14,0, "torch_holder_1")
 	:addTorch()
 spawn("script_entity", 2,0,0, "gw_debug")
@@ -608,5 +608,47 @@ end\
 function click()\
 \9gw.removeElement(\"Dialog\")\
 end")
-spawn("script_entity", 15,8,3, "delete_me")
-	:setSource("")
+spawn("script_entity", 17,13,0, "gw_book_test")
+	:setSource("function autoexec()\
+\
+\9fw.setHook('test_book_1.gw_book_testing.onUseItem',function()\
+\9\9\9local book = gw_book.create('test_book_1')\
+\9\9\9book.textColor = {100,100,100,210}\
+\9\9\9book:addPageHeader(1,'This is the header of the 1st page.')\
+\9\9\9\
+\9\9\9\
+\9\9\9book:addPageText(1,\
+[[Lorem ipsum dolor sit amet, consectetur adipiscing elit. Proin iaculis pretium velit,\
+commodo molestie augue adipiscing ac. In hac habitasse platea dictumst.Maecenas massa diam, accumsan sed mattis in, volutpat non elit. Maecenas ut ullamcorper nisi.]]\
+)\
+\9\9\
+\9\9\9book:addPageHeader(1,'Another header')\
+\9\9\9book:addPageText(1,\"And a bit more text. It is possible to add as many paragraphs and headers as you like.\\nNew lines should work too. Multiple new lines should work also\\n\\n\\n\\nas you can see\")\
+\9\9\9\
+\9\9\9book.textColor = {200,200,200,210}\
+\9\9\9book:addPageHeader(2,'Different font color for this page.')\
+\9\9\9book:addPageText(2,'Lets and an image here')\
+\9\9\9book:addPageImage(2,'mod_assets/textures/compass_full_E.tga',200,200)\
+\9\9\9book:addPageText(2,'and some text below it')\
+\9\9\9local text = book:addPageText(2,\"It's possible to change the position of the text like this\")\
+\9\9\9text.x = text.x + 40\
+\9\9\9\
+\9\9\9local col1 = book:addPageText(2,'Want multiple columns?')\
+\9\9\9col1.width = 100\
+\9\9\9col1:calculateHeight()\
+\9\9\9local col2 =book:addPageText(2,'Here you go')\
+\9\9\9col2:setRelativePosition('after_previous')\
+\9\9\9col2.width = text.width - 100\
+\9\9\9\
+\9\9\9book:addPageText(3,'Another page')\
+\9\9\9book:addPageText(4,'4th page')\
+\9\9\9book:addPageText(5,'5th page')\
+\9\9\9book:openPagePair(1)\
+\9\9\9\
+\9\9\9gw.addElement(book)\
+\9\9\9return false\
+\9\9end\
+\9)\
+\
+end")
+spawn("tome_wisdom", 15,14,2, "test_book_1")
