@@ -18,8 +18,8 @@ mapDesc([[
 ################################
 ################################
 ################################
-################################
-################################
+################.###############
+################.###############
 ##############...###############
 ##############......############
 ##############......############
@@ -92,9 +92,9 @@ function disableGrid()\
 end")
 spawn("dungeon_wall_text", 14,15,3, "dungeon_wall_text_1")
 	:setWallText("Enable mouse grid")
-spawn("gw_event", 16,16,2, "wounded_dwarf")
+spawn("gw_event", 16,12,2, "wounded_dwarf")
 	:setSource("-- is this event enabled?\
-enabled = true\
+--enabled = true\
 \
 -- name of the imeage to show\
 image = \"mod_assets/images/example-image.dds\"\
@@ -112,17 +112,17 @@ states = {\
   { \"init\",     \"An injured dwarf lies on the ground before\\nyou, nearly unconscious from his wounds.\" }, \
   { \"fainting\", \"The dwarf gasps out, \\\"Drow... save the\\nking... Prince is gone\\\". He falls unconscious.\" },\
   { \"fainted\",  \"And injured dwarf lies on the ground\\nbefore you. He is unconscious.\" },\
-  { \"healed\",   \"Having regained his strength, the dwarf\\nthanks you \\\"I thought i had met my death\\n\" ..\
+  { \"healed\",   \"Having regained his strength, the dwarf\\nthanks you \\\"I thought I had met my death\\n\" ..\
                 \"at the blade of that drow. In battle our\\nking was grievously wounded, and the\\n\" ..\
                 \"young prince kidnapped. I tried to stop\\nthe drow, but alas, I was overcome.\\n\\n\" ..\
                 \"\\\"You have saved me from death! I wish\\nthere was some way to thank you, but \" ..\
                 \"I have nothing. I am alone,\\nseparate from my people during the battle. May I \" ..\
                 \"join you,\\nso that together we can search for my people?\" },\
-  { \"join\",     \"As Taghor joins your party he says, \\\"During the battle, I chased my enemy up \" ..\
-                \"a staircase, to this level. My people should be on the level just below us.\\\"\" },\
-  { \"nojoin\",   \"I thank you, but I will find my own way back. A warning: beware the stone doorways \" ..\
-                \"set into these walls. They are portal entrances, which become active with the \"..\
-                \"right key. My party encamped near such a portal, and was easily ambushed.\\\"\" ..\
+  { \"join\",     \"As Taghor joins your party he says,\\n\\\"During the battle, I chased my enemy up\\n\" ..\
+                \"a staircase, to this level. My people should\\nbe on the level just below us.\\\"\" },\
+  { \"nojoin\",   \"I thank you, but I will find my own way\\nback. A warning: beware the stone\\ndoorways \" ..\
+                \"set into these walls. They are\\nportal entrances, which become active with\\nthe \"..\
+                \"right key. My party encamped near\\nsuch a portal, and was easily ambushed.\\\"\\n\" ..\
                 \"Thanking you again, the dwarf wanders off.\"}\
 }\
 \
@@ -144,10 +144,10 @@ end\
 actions = {\
   { \"init\",      \"healed\",   \"Tend his wounds\"},\
   { \"init\",      \"fainting\", \"Talk\", onFaint },\
-  { \"init\",      \"end\",      \"Leave\" },\
+  { \"init\",      \"abort\",    \"Leave\" },\
   { \"fainting\",  \"fainted\",  \"Continue\"},\
   { \"fainted\",   \"healed\",   \"Tend his wounds\"},\
-  { \"fainted\",   \"end\",      \"Leave\" },\
+  { \"fainted\",   \"abort\",    \"Leave\" },\
   { \"healed\",    \"join\",     \"Yes\" },\
   { \"healed\",    \"nojoin\",   \"No\" },\
   { \"join\",      \"end\",      \"Continue\", onJoin},\
@@ -492,9 +492,9 @@ end\
 \
 ")
 spawn("lightning_rod", 14,14,3, "lightning_rod_1")
-spawn("sack", 15,15,3, "sack_1")
-spawn("rock", 15,15,1, "rock_1")
-spawn("rock", 15,15,0, "rock_2")
+spawn("sack", 14,14,2, "sack_1")
+spawn("rock", 14,14,1, "rock_1")
+spawn("rock", 14,14,0, "rock_2")
 spawn("lever", 14,15,3, "lever_1")
 	:addConnector("activate", "debug", "debugGrid")
 	:addConnector("deactivate", "debug", "disableGrid")
@@ -658,157 +658,3 @@ commodo molestie augue adipiscing ac. In hac habitasse platea dictumst.Maecenas 
 \
 end")
 spawn("tome_wisdom", 15,14,2, "test_book_1")
-spawn("script_entity", 13,5,0, "gw_events2")
-	:setSource("\
-tEvents = {}\
-\
--- processes events that are located in the same\
--- location as party\
-function processEvents(ctx)\
-    local items=\"\"\
-    for i in entitiesAt(party.level, party.x, party.y) do\
-        if i.name == \"gw_event\" then\
-            processEncounter(ctx, i)\
-        end\
-    end\
-end\
-\
-function processEncounter(ctx, eventScript)\
-    if not sanityCheck(eventScript) then\
-        help.unfreezeWorld()\
-        return\
-    end\
-\9help.freezeWorld()\
-\9\
-\9local id = eventScript.id\
-\
-\9if tEvents[id] == nil then\
-\9\9-- Get the first event\
-\9\9tEvents[id] = eventScript.states[1][1]\
-\9end\
-\9\
-\9local state = tEvents[id]\
-\
-\9local descr = \"\"\
-\9for name, stateInfo in pairs(eventScript.states) do\
-\9\9if stateInfo[1] == state then\
-\9\9\9descr = stateInfo[2]\
-\9\9\9break\
-\9\9end\
-\9end\
-\9\9\
-\9-- we don't want to keep adding 60 boxes per seconds\
-\9if gw.getElement(\"Dialog\") == nil then\
-\9\9gw.setDefaultColor({200,200,200,255})\
-\9\9gw.setDefaultTextColor({255,255,255,255})\
-\
-\9\9-- It's not possible to use relative position for root element, \
-\9\9-- so let's calculate center of the screen automatically\
-\9\9local bg = Dialog.create(-1, -1, 600, 400)\
-\
-\9    bg.dialog.text = descr\
-\9\
-\9\9-- Check if image is defined for this event\
-\9\9local image_width = 0\
-\9\9local image_height = 0\
-\9\9if eventScript.image then\
-\9\9\9image_width = eventScript.image_width\
-\9\9\9image_height = eventScript.image_height\
-\9\9\9if not image_width then\
-\9\9 \9\9image_width = 128\
-\9\9\9end\
-\9\9if not image_height then\
-\9\9\9image_height = 128\
-\9\9end\
-\
-\9\9local img = gw_image.create('img1', 0, 0, image_width, image_height, eventScript.image)\
-\9\9img.marginTop = 30\
-\9\9bg:addChild(img)\
-\9\9img:setRelativePosition({'top','right'})\
-\9end\
-\9\9\
-\9-- Ok, now write a text\
-\9stateData = eventScript.states[state]\
-\
-\9printChoices(ctx, id, state, eventScript.actions, bg)\
-\
-\9gw.addElement(bg, 'gui')\
-\9end\
-end\
-\
-function printChoices(ctx, event_id, current_state, actions, window)\
-\9number = 0\
-\9for key1, action in pairs(actions) do\
-\9\9if action[1] == current_state then\
-\9\9\9-- action[2] = next_state, action[3] = text, action[4] = callback (optional)\
-\9\9\9print(\"#### action[1]=\"..action[1]..\" [2]=\"..action[2]..\" [3]=\"..action[3]..\" [4]=\"..type(action[4]))\
-\9\9\9showButton(ctx, event_id, number, window, action[2], action[3], action[4])\
-\9\9\9number = number + 1\
-\9\9end\
-\9end\
-\
-end\
-\
-function sanityCheck(e)\
-\9if e.name ~= \"gw_event\" then\
-\9\9return false\
-\9end\
-    if e.states == nil then\
-\9\9return false\
-\9end\
-\9\
-\9if e.actions == nill then\
-\9\9return false\
-\9end\
-\9\
-\9if (e.enabled ~= true) then\
-\9\9return false\
-\9end\
-\9\
-\9return true\
-\
-end\
-\
-function callback(button)\
-\9local user_state = nil\
-\9if (button.user_callback) then\
-\9\9user_state = button:user_callback()\
-\9\9if user_state then\
-\9\9\9print(\"User callback return:\"..user_state)\
-\9\9else\
-\9\9\9print(\"User callback (no returned value)\")\
-\9\9end\
-\9end\
-\9if user_state then \
-\9\9tEvents[button.event_id] = user_state\
-\9else\
-\9\9tEvents[button.event_id] = button.next_state\
-\9end\
-\9\
-\9gw.removeElement(\"Dialog\", 'gui')\
-\
-\9\
-end \
-\
-function showButton(ctx, event_id, number, window, next_state, text, userCallback)\
-\
-\9local x = 30 + 170*number\
-\9local y = 350 \
-\9local width = 150\
-\9local height = 25\
-\9\
-\9-- print(\"Adding button \"..next_state..\", txt=\"..text..\" callback=\"..type(userCallback)..\" event_id=\"..event_id)\
-\
-\9local button = gw_button3D.create(\"button_\"..next_state, x, y, text, width, height)\
-\9window:addChild(button)\
-\9button.onClick = callback\
-\9button.event_id = event_id\
-\9button.next_state = next_state\
-\9button.user_callback = userCallback\
-\
-    if ctx.button(\"button1\", x, y, width, height) then\
-\9\9--callback(ctx)\
-\9\9print(\"Clicked \" .. text.. \" => \".. next_state)\
-\9end\
-end\
-")

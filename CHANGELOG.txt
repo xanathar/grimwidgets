@@ -1,7 +1,11 @@
 v0.2
-(Thomson)	- Integrated Dialog module from Legends of the Northern Realms
-		  by Mahric. It it still not very clean, but usable. The new textured windows
-		  look simply beautiful.
+(Thomson)   - gw_events rewritten. State is now a string. Action definition is now much cleaner. There is
+	      no need to define callbacks for each state. Events can be aborted (closed for now and restarted
+	      when party revisits event location). Events now use textured windows.
+(JKos)	    - gw_book example added. It features a generic book with text, chapters, images, headers and columns.
+(Thomson)   - Integrated Dialog module from Legends of the Northern Realms
+	      by Mahric. It it still not very clean, but usable. The new textured windows
+	      look simply beautiful.
 
 v0.01
 (JKos)		- Added gw_element.onDraw hook. If the hook returns false the element won't be drawn.
