@@ -1,4 +1,7 @@
 fw_addModule('gw_events',[[
+
+tEvents = {}
+
 -- processes events that are located in the same
 -- location as party
 function processEvents(ctx)
@@ -6,7 +9,7 @@ function processEvents(ctx)
     for i in entitiesAt(party.level, party.x, party.y) do
         if i.name == "gw_event" then
             processEncounter(ctx, i)
-	end
+        end
     end
 end
 
@@ -16,76 +19,70 @@ function processEncounter(ctx, eventScript)
         return
     end
 	help.freezeWorld()
+	
+	local id = eventScript.id
 
-	local state = eventScript.state
-	if state == nil then
-		state = 1
+	if tEvents[id] == nil then
+		-- Get the first event
+		tEvents[id] = eventScript.states[1][1]
 	end
+	
+	local state = tEvents[id]
 
-	-- get width and height of the event box, use defaults if necessary
-        local bg_width = eventScript.width
-	local bg_height = eventScript.height
-	if not bg_width then
-	   bg_width = 600
+	local descr = ""
+	for name, stateInfo in pairs(eventScript.states) do
+		if stateInfo[1] == state then
+			descr = stateInfo[2]
+			break
+		end
 	end
-	if not bg_height then
-	   bg_height = 400
-	end
-
+		
 	-- we don't want to keep adding 60 boxes per seconds
-	gw.removeElement("bg")
+	if gw.getElement("Dialog") == nil then
+		gw.setDefaultColor({200,200,200,255})
+		gw.setDefaultTextColor({255,255,255,255})
 
-	-- It's not possible to use relative position for root element, 
-	-- so let's calculate center of the screen
-	local bg = gw_rectangle.create('bg', (ctx.width - bg_width)/2, 
-				       (ctx.height - bg_height)/2, bg_width, bg_height)
-	bg.color = {128, 128, 128, 192} -- use gray semi-transpartent background
+		-- It's not possible to use relative position for root element, 
+		-- so let's calculate center of the screen automatically
+		local bg = Dialog.create(-1, -1, 600, 400)
 
-	-- Check if image is defined for this event
-	local image_width = 0
-	local image_height = 0
-	if eventScript.image then
-	   image_width = eventScript.image_width
-	   image_height = eventScript.image_height
-	   if not image_width then
-	      image_width = 120
-	   end
-	   if not image_height then
-	      image_height = 120
-	   end
+	    bg.dialog.text = descr
+	
+		-- Check if image is defined for this event
+		local image_width = 0
+		local image_height = 0
+		if eventScript.image then
+			image_width = eventScript.image_width
+			image_height = eventScript.image_height
+			if not image_width then
+		 		image_width = 128
+			end
+		if not image_height then
+			image_height = 128
+		end
 
-	   local img = gw_image.create('img1', 0, 0, image_width, image_height, "mod_assets/images/example-image.dds")
-	   bg:addChild(img)
-	   img:setRelativePosition({'top','right'})
+		local img = gw_image.create('img1', 0, 0, image_width, image_height, eventScript.image)
+		img.marginTop = 30
+		bg:addChild(img)
+		img:setRelativePosition({'top','right'})
 	end
 		
 	-- Ok, now write a text
 	stateData = eventScript.states[state]
 
-	local txt_width = bg_width - image_width
-	local txt_height = 200
-
-	local text1 = bg:addChild('rectangle','text1',0,0, txt_width, txt_height)
-	text1:setRelativePosition{'top','left'}
-	text1.color = {255, 255, 255}
-	text1.text = stateData[2]
-		
-	local tbl = eventScript.actions
-		
-	local buttons_x = eventScript.buttons_x
-	local buttons_y = eventScript.buttons_y
-	local buttons_width = eventScript.buttons_width
-		
-	printChoices(ctx, state, tbl, buttons_x, buttons_y, buttons_width)
+	printChoices(ctx, id, state, eventScript.actions, bg)
 
 	gw.addElement(bg, 'gui')
+	end
 end
 
-function printChoices(ctx, current_state, states, x, y, width)
-	for key1,value in pairs(states) do
-		if value[1] == current_state then
-			showButton(ctx, x, y, width, value[2], value[3])
-			y = y + 30
+function printChoices(ctx, event_id, current_state, actions, window)
+	number = 0
+	for key1, action in pairs(actions) do
+		if action[1] == current_state then
+			-- action[2] = next_state, action[3] = text, action[4] = callback (optional)
+			showButton(ctx, event_id, number, window, action[2], action[3], action[4])
+			number = number + 1
 		end
 	end
 
@@ -111,17 +108,42 @@ function sanityCheck(e)
 
 end
 
-function showButton(ctx, x, y, width, text, callback)
-    -- draw button1 with text
-    ctx.color(128, 128, 128)
-    ctx.drawRect(x, y, width, 20)
-    ctx.color(255, 255, 255)
-    ctx.drawText(text, x + 10, y + 15)
-	local name="button"..x..y
-	local height = 30
-    if ctx.button("button1", x, y, width, height) then
-		callback(ctx)
+function callback(button)
+	local user_state = nil
+	if (button.user_callback) then
+		user_state = button:user_callback()
+		if user_state then
+			print("User callback return:"..user_state)
+		else
+			print("User callback (no returned value)")
+		end
 	end
+	if user_state then 
+		tEvents[button.event_id] = user_state
+	else
+		tEvents[button.event_id] = button.next_state
+	end
+	
+	gw.removeElement("Dialog", 'gui')
+
+	
+end 
+
+function showButton(ctx, event_id, number, window, next_state, text, userCallback)
+
+	local x = 30 + 170*number
+	local y = 350 
+	local width = 150
+	local height = 25
+	
+	-- print("Adding button "..next_state..", txt="..text.." callback="..type(userCallback).." event_id="..event_id)
+
+	local button = gw_button3D.create("button_"..next_state, x, y, text, width, height)
+	window:addChild(button)
+	button.onClick = callback
+	button.event_id = event_id
+	button.next_state = next_state
+	button.user_callback = userCallback
 end
 ]])
 
