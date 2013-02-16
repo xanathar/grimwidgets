@@ -29,7 +29,7 @@ and clicking [download](https://github.com/xanathar/grimwidgets/archive/master.z
 that you should extract into your dungeons directory. Depending on your OS,
 this will be:
 
-- c:\Users\[login]\Documents\Almost Human\Legend of Grimrock\Dungeons (Windows)
+- c:\Users\\[login]\Documents\Almost Human\Legend of Grimrock\Dungeons (Windows)
 - ~/Library/Application Support/Almost Human/Legend of Grimrock/Dungeons (Mac OS)
 - ~/.local/share/Almost Human/Legend of Grimrock/Dugeons (Linux)
 
@@ -81,7 +81,7 @@ Now you must make sure that the strangeMist() function is called at the appropri
 time. You can hook it to (potentially invisible) pressure plate, to timer, to
 lever etc. Once the strangeMist() is triggered, it will display the dialog box.
 You may note that the text is specified with double brackets. This is Lua way of 
-defining multi-line strings. Once the user clicks ok, the clicked() command is called.
+defining multi-line strings. Once the user clicks ok, the clicked() function is called.
 You can do whatever you want there - print out something, spawn new items, open doors
 etc.
 
@@ -188,6 +188,84 @@ to achieve that goal:
 TODO
 
 ![](https://raw.github.com/xanathar/grimwidgets/master/doc/dialog-widgets.png)
+
+### New Party Members
+It is possible to specify that a new champion wants to join your party. The
+following code allows that:
+```lua
+function newChampion()
+	newguy = {
+		name = "Taghor",    -- just a name
+		race = "Insectoid", -- must be one of: Human, Minotaur, Lizardman, Insectoid
+		class = "Mage",     -- must be one of: Figther, Rogue, Mage or Ranger
+		sex = "male", 		-- must be one of: male, female
+		level = 3,          -- character's level
+		portrait = "mod_assets/textures/portraits/taghor.dds", -- must be 128x128 dds file
+		
+		-- allowed skills: air_magic, armors, assassination, athletics, axes, daggers, 
+		-- dodge, earth_magic, fire_magic, ice_magic, maces, missile_weapons, spellcraft,
+		-- staves, swords, throwing_weapons and unarmed_combat
+		skills = { fire_magic = 10, earth_magic = 20, air_magic = 30, ice_magic = 40 },
+				
+		-- allowed traits: aggressive, agile, athletic, aura, cold_resistant, evasive, 
+		-- fire_resistant, fist_fighter, head_hunter, healthy, lightning_speed,
+		-- natural_armor, poison_resistant, skilled, strong_mind, tough
+		-- Traits must be specified in quotes.
+		-- Typically each character has 2 traits, but you can specify more or less.
+		traits = { "lightning_speed", "tough", "skilled", "head_hunter", "aura" },
+		
+		health = 80, 		  -- Maximum health
+		current_health = 70,  -- Current health
+		
+		energy = 300,         -- Maximum energy
+		current_energy = 250, -- Current energy
+
+		strength = 12,        -- Strength
+		dexterity = 11,       -- Dexterity
+		vitality = 10,        -- Vitality
+		willpower = 9,        -- Willpower
+		
+		protection = 25,      -- protection
+		evasion = 30, 		  -- evasion
+				
+		-- Resist fire/cold/poison/shock (remember that those values will be modified by bonuses
+		-- from fire, cold, poison or shock magic
+		resist_fire = 11,
+		resist_cold = 22,
+		resist_poison = 33,
+		resist_shock = 44,
+		
+		-- items: Notation item_name = slot. Slots numbering: 1 (head), 2 (torso), 3 (legs), 4 (feet), 
+		-- 5 (cloak), 6 (neck), 7 (left hand), 8 (right hand), 9 (gaunlets), 10 (bracers), 11-31 (backpack
+		-- slots) or 0 (any empty slot in backpack)
+		-- Make sure you put things in the right slot. Wrong slot (e.g. attempt to try boots on head)
+		-- will make the item spawn to fail.
+		items = { battle_axe = 0, lurker_hood = 1, lurker_vest = 2, lurker_pants = 3, lurker_boots = 4 },
+		
+		-- food: 0 (starving) to 1000 (just ate the whole cow)
+		food = 100
+		
+	}
+
+	-- Call addChampion method. It will add new guy to the party if there are suitable slots and will
+	-- display a GUI prompt selecting a party member to drop if your party is already 4 guys
+	gw_party.addChampion(newguy)
+end
+```
+Typically the party is made of 4 champions from the beginning, which happens to be
+the maximum number. If there is space left (i.e. there are 3 or less champions), the
+new guy joins in immediately. If the party is full, a dialog box appear asking
+which one to leave behind. It is possible to choose the new guy, which effectively
+means that the new guy does not join.
+
+Due to Grimrock scripting API limitation, it is not possible for a new guy to have
+level lower than the one that he/she replaces.
+
+The GUI for a new guy to join looks like this:
+
+![](https://raw.github.com/xanathar/grimwidgets/master/doc/party-join.png)
+
+
 
 ### Generic book
 Grimwidgets provides a convenient way to define a generic purpose book. It
