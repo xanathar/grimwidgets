@@ -234,11 +234,41 @@ call, and then adjust its width:
 After the book is created and contains all required content, you should use it
 as any other gwElement. See section below caled "How to use gwElement?".
 
-#### Example
+#### Book example
+The following code could be used to create an example book:
 
+    local book = gw_book.create('test_book_1')
+    book.textColor = {100,100,100,210}
 
+    -- Define page 1 (with 2 sections)
+    book:addPageHeader(1,'This is the header of the 1st page.')
+    book:addPageText(1, [[This is a multiline
+    text about nothing specific.
+    Just a text]])
+    book:addPageHeader(1,'Second header')
+    book:addPageText(1,"There may be many header on the same page")
 
-    
+    -- Define page 2 (with image and multiple columns)
+    book.textColor = {200,200,200,210}
+    book:addPageHeader(2,'Different font color for this page.')
+    book:addPageText(2,'Lets and an image here')
+    book:addPageImage(2,'mod_assets/textures/compass_full_E.tga',200,200)
+    book:addPageText(2,'and some text below it')
+
+    -- Define multiple columns (still on page 2)
+    local col1 = book:addPageText(2,'Want multiple columns?')
+    col1.width = 100
+    col1:calculateHeight()
+    local col2 =book:addPageText(2,'Here you go')
+    col2:setRelativePosition('after_previous')
+    col2.width = 200
+    			
+    book:openPagePair(1)
+			
+    gw.addElement(book)
+
+The following example can produce the following result:
+![](https://raw.github.com/xanathar/grimwidgets/master/doc/book.png)
 
     
 
