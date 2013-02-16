@@ -57,6 +57,7 @@ follow up sections below.
 ## Loe Level (Powerful) Interface
 The most common reason to use grimwidgets is to display message popups.
 
+### Simple dialog box
 To display a dialog box with a single OK button use the following function
 
     Dialog.quickDialog(text_to_display)
@@ -90,8 +91,20 @@ etc.
 
 An example run of such a GUI:
 
-[[doc/dialog-ok.png]]
-[[doc/dialog-ok.png|alt=Example fo Dialog.quickDialog(text, callback)]]
+![](https://raw.github.com/xanathar/grimwidgets/master/doc/dialog-ok.png)
+
+### Yes/No Dialog box
+TODO
+
+![](https://raw.github.com/xanathar/grimwidgets/master/doc/dialog-yes-no.png)
+
+### Dialog box with custom buttons
+
+![](https://raw.github.com/xanathar/grimwidgets/master/doc/dialog-custom.png)
+
+### Dialog box with extra widgets
+
+![](https://raw.github.com/xanathar/grimwidgets/master/doc/dialog-widgets.png)
 
 
 ## Elements
