@@ -69,7 +69,7 @@ first party champion levels up. You could write the following code:
 ```lua
     function strangeMist()
         Dialog.quickDialog([[Your party approaches an eerie mist.
-        One of you tries to touch it. Mist disappears and you feel englightened.]],
+        One of you tries to touch it. Mist disappears and you feel enlightened.]],
         clicked)
     end
 
