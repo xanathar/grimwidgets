@@ -185,7 +185,62 @@ to achieve that goal:
 
 ### Dialog box with extra widgets
 
+TODO
+
 ![](https://raw.github.com/xanathar/grimwidgets/master/doc/dialog-widgets.png)
+
+### Generic book
+Grimwidgets provides a convenient way to define a generic purpose book. It
+may be used as a diary, spellbook, questlog, bestiary, or anything else
+used to keep information.
+
+First step is to create a book:
+
+    book gw_book.create(id)
+    
+This call will create and return a book object that will use specified id. Make
+sure that your id is unique. The next step is to specify book text color. The rest
+of this section assumes that there is an object called book that is an instance
+of the book created with gw_book.create().
+
+    book.textColor = { red, green, blue, alpha }
+    
+This specifies color of the text. red, green, blue and alpha all take values from
+0 to 255. Alpha 0 means totally transparent and 255 means totally opaque. This
+applies to all following additions. 
+
+The next step is to define first page header:
+
+    book:addPageHeader(pageNumber, headerText)
+    
+After that a text can be added:
+
+    book:addPageText(pageNumber, text)
+
+You can also add images to the book:
+
+    book:addPageImage(pageNumber, pathToImage, width, height)
+
+It is possible to define columns on a page. Just add regular text with a addPageText
+call, and then adjust its width:
+
+    local column1 = book:addPageText(1,"Want multiple columns?")
+    column1.width = 100
+    col1:calculateHeight()
+    local column2 = book:addPageText(1,"Here you go")
+    column2:setRelativePosition('after_previous')
+    column2.width = 200
+
+After the book is created and contains all required content, you should use it
+as any other gwElement. See section below caled "How to use gwElement?".
+
+#### Example
+
+
+
+    
+
+    
 
 ## Low Level (Flexible) Interface
 The most common reason to use grimwidgets is to display message popups.
@@ -197,6 +252,29 @@ The most common reason to use grimwidgets is to display message popups.
 - gw_button3D
 - gw_rectangle
 
-## Developing your own widgets
+### How to use gwElement?
+There are many ways gwElements can be used.
 
-TODO
+First obvious one is to just diplay it. The following call can be used for that
+purpose:
+
+    gw.addElement(gwElement, hookName)
+
+gwElement is a gwElement object, e.g. book. hookName specifies when the gwElement
+should be displayed. Currently available hooks are: 'gui' (display always, after GUI
+elements are diplayed), 'inventory' (display only when champion inventory is open),
+'stats' (display only when statistics are open) or 'skills' (open only when skills
+are open). If not specified, the default 'gui' will be assumed.
+
+Once you decide that you no longer wish to see gwElement, you should remove it:
+
+    gw.removeElement(gwElement, hookName)
+
+It is possible to access one widget that is currently being displayed if you know
+its id:
+
+    gw.getElement(id, hookName)
+
+It will return gwElement with a specified id (or nil if no such gwElement exists).
+
+## Developing your own widgets
