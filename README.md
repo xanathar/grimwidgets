@@ -53,20 +53,20 @@ follow up sections below.
 
 ### Simple dialog box
 To display a dialog box with a single OK button use the following function
-
+```lua
     Dialog.quickDialog(text_to_display)
-
+```
 This will display the text with a single OK button. The window will disappear
 when the user clicks OK. You can also pass additional parameter, which is a
 function name. That function will be called when the user clicks ok.
-
+```lua
     Dialog.quickDialog(text_to_display, function_name)
-
+```
 #### Simple dialog box example
 
 For example if you want to display a popup and once the window is closed, then
 first party champion levels up. You could write the following code:
-
+```lua
     function strangeMist()
         Dialog.quickDialog([[Your party approaches an eerie mist.
         One of you tries to touch it. Mist disappears and you feel englightened.]],
@@ -76,7 +76,7 @@ first party champion levels up. You could write the following code:
     function clicked()
         party:getChampion(1):levelUp()
     end
-
+```
 Now you must make sure that the strangeMist() function is called at the appropriate
 time. You can hook it to (potentially invisible) pressure plate, to timer, to
 lever etc. Once the strangeMist() is triggered, it will display the dialog box.
@@ -92,9 +92,9 @@ An example run of such a GUI:
 ### Yes/No Dialog
 It is useful to ask a simple yes/no questions and get user's response. You can
 create such a dialog using the following functions:
-
+```lua
     dialogId Dialog.quickYesNoDialog(text, callback, npcId)
-
+```
 text specifies text to display, callback is a name of the function that will be
 called after user clicks something. npcId is an optional Non-Player Character (NPC)
 identifier if you use NPC module. You can specify nil here if you don't want to
@@ -102,14 +102,14 @@ use it.
 
 Once the dialog is created, it is not displayed yet. It can be displayed using
 the following call:
-
+```lua
     Dialog.activate(dialogId, callback)
-
+```
 Make sure you pass dialogId returned by Dialog.quickYesNoDialog here.
 
 #### Yes/No dialog example
 Here's an example dialog to test player's courage:
-
+```lua
     function yesNoQuestion()
         local dialogId = Dialog.quickYesNoDialog("Hey! Are you brave?", callback, nil)
         Dialog.activate(dialogId, calback)
@@ -123,16 +123,16 @@ Here's an example dialog to test player's courage:
             hudPrint("Run for your life! There's killer snail after you")
         end
     end
-
+```
 ![](https://raw.github.com/xanathar/grimwidgets/master/doc/dialog-yes-no.png)
 
 ### Dialog box with custom buttons
 
 It is often useful to let the user make a decision or ask about something.
 This is slightly more complicated and requires couple steps:
-
+```lua
     dialogId Dialog.new(text, buttonText, npcId)
-    
+```  
 text is a text to be displayed. buttonText is the text on a first button.
 npcId is an optional parameter that specify Non-Player Character (NPC) identifier.
 It is only usable if you also use NPC module. If not using NPCs, specify nil here.
@@ -140,13 +140,13 @@ This method returns dialogId. Make sure you store it in a variable, because
 you'll need it to add other buttons or show the dialog.
 
 Now you can add additional buttons using the following call:
-
+```lua
     Dialog.addButton(dialogId, buttonText)
-    
+```    
 Once you have added all buttons, you can display the window:
-
+```lua
     Dialog.activate(dialogId, callback)
-    
+```   
 This will display dialog specified by dialogId (as returned by Dialog.new())
 and will call callback function after the user clicks one of the buttons.
 
@@ -154,7 +154,7 @@ and will call callback function after the user clicks one of the buttons.
 Let's imagine a case where user meets a big ogre and he asks the party to leave. The
 options would be to apologize and or insult the ogre. The following code can be used
 to achieve that goal:
-
+```lua
     agree ="I'm going already!"
     refuse = "Right, make me!"
 
@@ -180,7 +180,7 @@ to achieve that goal:
     	    hudPrint("Ogre is now furious!")
     	end
     end
-
+```
 ![](https://raw.github.com/xanathar/grimwidgets/master/doc/dialog-custom.png)
 
 ### Dialog box with extra widgets
@@ -195,48 +195,48 @@ may be used as a diary, spellbook, questlog, bestiary, or anything else
 used to keep information.
 
 First step is to create a book:
-
+```lua
     book gw_book.create(id)
-    
+```    
 This call will create and return a book object that will use specified id. Make
 sure that your id is unique. The next step is to specify book text color. The rest
 of this section assumes that there is an object called book that is an instance
 of the book created with gw_book.create().
-
+```lua
     book.textColor = { red, green, blue, alpha }
-    
+```    
 This specifies color of the text. red, green, blue and alpha all take values from
 0 to 255. Alpha 0 means totally transparent and 255 means totally opaque. This
 applies to all following additions. 
 
 The next step is to define first page header:
-
+```lua
     book:addPageHeader(pageNumber, headerText)
-    
+```    
 After that a text can be added:
-
+```lua
     book:addPageText(pageNumber, text)
-
+```
 You can also add images to the book:
-
+```lua
     book:addPageImage(pageNumber, pathToImage, width, height)
-
+```
 It is possible to define columns on a page. Just add regular text with a addPageText
 call, and then adjust its width:
-
+```lua
     local column1 = book:addPageText(1,"Want multiple columns?")
     column1.width = 100
     col1:calculateHeight()
     local column2 = book:addPageText(1,"Here you go")
     column2:setRelativePosition('after_previous')
     column2.width = 200
-
+```
 After the book is created and contains all required content, you should use it
 as any other gwElement. See section below caled "How to use gwElement?".
 
 #### Book example
 The following code could be used to create an example book:
-
+```lua
     local book = gw_book.create('test_book_1')
     book.textColor = {100,100,100,210}
 
@@ -266,7 +266,7 @@ The following code could be used to create an example book:
     book:openPagePair(1)
 			
     gw.addElement(book)
-
+```
 The following example can produce the following result:
 ![](https://raw.github.com/xanathar/grimwidgets/master/doc/book.png)
 
