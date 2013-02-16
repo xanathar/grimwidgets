@@ -285,6 +285,9 @@ The most common reason to use grimwidgets is to display message popups.
 
 ### gw_element
 
+gw_element is the base element (or "class") of the all other gw-elements, which means that all other gw-elements do inherit all properties, methods and hooks of the gw_element. 
+It isn't drawn at all if you add it to the gui, but it can be used as a invisible container for other elements (like div in html).
+
 ####Properties
 
 - id: (string) Identifier of the element. Not required for child elements.
