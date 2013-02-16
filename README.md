@@ -277,10 +277,47 @@ The most common reason to use grimwidgets is to display message popups.
 
 ### Available grimwidget elements
 
+
 - gw_element
 - gw_button
 - gw_button3D
 - gw_rectangle
+
+### gw_element
+
+####Properties
+
+- id: (string) Identifier of the element. Not required for child elements.
+- x: (int) horizontal position of the element. 
+- y: (int) vertical position of the element
+- marginLeft: (int, default 0) Margin to the element on the left side.
+- marginTop: (int, default 0) Margin to the element on the top.
+- width: (int, default 0) element width
+- height: (int, default 0) element height
+- parent: (gw_element) parent of the element
+- children: (table of gw_element:s) 
+- firstMousePressPoint = nil
+- color: (table of integer:s) color of the element {red,green,blue,alpha} eg. {200,200,0,255}
+- textColor: (table of integer:s) color of the element text {red,green,blue,alpha}
+- textSize: (string) possible values are "tiny","small","medium","large"
+- active: (boolean, default = true) if active = false then the element is not drawn.
+
+####Methods
+- addChild 
+- drawSelf 
+- draw 
+- setRelativePosition 
+- moveAfter
+- moveBelow
+- getAncestor 
+- deactivate
+- activate
+- getChild
+
+####Hooks
+- onPress
+- onClick 
+
 
 ### How to use gwElement?
 There are many ways gwElements can be used.
