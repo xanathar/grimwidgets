@@ -17,8 +17,6 @@ support for:
 - shops
 - scripted events
 
-[[_TOC_]]
-
 ## INSTALLATION
 
 TODO
@@ -64,11 +62,13 @@ function name. That function will be called when the user clicks ok.
 
     Dialog.quickDialog(text_to_display, function_name)
 
+#### Simple dialog box example
+
 For example if you want to display a popup and once the window is closed, then
 first party champion levels up. You could write the following code:
 
     function strangeMist()
-	Dialog.quickDialog([[Your party approaches an eerie mist.
+        Dialog.quickDialog([[Your party approaches an eerie mist.
         One of you tries to touch it. Mist disappears and you feel englightened.]],
         clicked)
     end
@@ -89,9 +89,40 @@ An example run of such a GUI:
 
 ![](https://raw.github.com/xanathar/grimwidgets/master/doc/dialog-ok.png)
 
-### Yes/No Dialog box
+### Yes/No Dialog
+It is useful to ask a simple yes/no questions and get user's response. You can
+create such a dialog using the following functions:
 
-TODO
+    dialogId Dialog.quickYesNoDialog(text, callback, npcId)
+
+text specifies text to display, callback is a name of the function that will be
+called after user clicks something. npcId is an optional Non-Player Character (NPC)
+identifier if you use NPC module. You can specify nil here if you don't want to
+use it.
+
+Once the dialog is created, it is not displayed yet. It can be displayed using
+the following call:
+
+    Dialog.activate(dialogId, callback)
+
+Make sure you pass dialogId returned by Dialog.quickYesNoDialog here.
+
+#### Yes/No dialog example
+Here's an example dialog to test player's courage:
+
+    function yesNoQuestion()
+        local dialogId = Dialog.quickYesNoDialog("Hey! Are you brave?", callback, nil)
+        Dialog.activate(dialogId, calback)
+    end
+
+    function callBack(answer)
+        if answer == "Yes" then
+            hudPrint("Yeah, right...")
+        end
+        if answer == "No" then
+            hudPrint("Run for your life! There's killer snail after you")
+        end
+    end
 
 ![](https://raw.github.com/xanathar/grimwidgets/master/doc/dialog-yes-no.png)
 
@@ -119,7 +150,7 @@ Once you have added all buttons, you can display the window:
 This will display dialog specified by dialogId (as returned by Dialog.new())
 and will call callback function after the user clicks one of the buttons.
 
-#### Example
+#### Dialog box with custom buttons example
 Let's imagine a case where user meets a big ogre and he asks the party to leave. The
 options would be to apologize and or insult the ogre. The following code can be used
 to achieve that goal:
