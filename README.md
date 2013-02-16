@@ -53,10 +53,6 @@ If you prefer ease of use, this is the interface for you. If you rather
 prefer flexibility and andvanced features, see Low level interface in 
 follow up sections below.
 
-
-## Loe Level (Powerful) Interface
-The most common reason to use grimwidgets is to display message popups.
-
 ### Simple dialog box
 To display a dialog box with a single OK button use the following function
 
@@ -94,11 +90,65 @@ An example run of such a GUI:
 ![](https://raw.github.com/xanathar/grimwidgets/master/doc/dialog-ok.png)
 
 ### Yes/No Dialog box
+
 TODO
 
 ![](https://raw.github.com/xanathar/grimwidgets/master/doc/dialog-yes-no.png)
 
 ### Dialog box with custom buttons
+
+It is often useful to let the user make a decision or ask about something.
+This is slightly more complicated and requires couple steps:
+
+    dialogId Dialog.new(text, buttonText, npcId)
+    
+text is a text to be displayed. buttonText is the text on a first button.
+npcId is an optional parameter that specify Non-Player Character (NPC) identifier.
+It is only usable if you also use NPC module. If not using NPCs, specify nil here.
+This method returns dialogId. Make sure you store it in a variable, because
+you'll need it to add other buttons or show the dialog.
+
+Now you can add additional buttons using the following call:
+
+    Dialog.addButton(dialogId, buttonText)
+    
+Once you have added all buttons, you can display the window:
+
+    Dialog.activate(dialogId, callback)
+    
+This will display dialog specified by dialogId (as returned by Dialog.new())
+and will call callback function after the user clicks one of the buttons.
+
+#### Example
+Let's imagine a case where user meets a big ogre and he asks the party to leave. The
+options would be to apologize and or insult the ogre. The following code can be used
+to achieve that goal:
+
+    agree ="I'm going already!"
+    refuse = "Right, make me!"
+
+    function clickOgre()
+        local text = "Hey! What are you doing here? Leave while you can!"
+        
+        -- This created a new dialog with text written on it and a single 
+        -- button that has value of agree variable written on it
+        local dialogId = Dialog.new(text, agree, nil)
+        
+        -- Add another button that will challenge the ogre
+        Dialog.addButton(dialogId, refuse)
+        
+        -- Display our dialog and call clicked method when user chooses something
+        Dialog.activate(Dialog, clicked)
+    end
+
+    fucntion clicked(clickedText)
+    	if clickedText == agree then
+    	    hudPrint("Party if full of chickens!")
+    	end
+    	if clickedText == refuse then
+    	    hudPrint("Ogre is now furious!")
+    	end
+    end
 
 ![](https://raw.github.com/xanathar/grimwidgets/master/doc/dialog-custom.png)
 
@@ -106,17 +156,15 @@ TODO
 
 ![](https://raw.github.com/xanathar/grimwidgets/master/doc/dialog-widgets.png)
 
+## Low Level (Flexible) Interface
+The most common reason to use grimwidgets is to display message popups.
 
-## Elements
+### Available grimwidget elements
 
 - gw_element
 - gw_button
 - gw_button3D
 - gw_rectangle
-
-## General functions
-
-TODO
 
 ## Developing your own widgets
 
