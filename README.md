@@ -288,6 +288,9 @@ The most common reason to use grimwidgets is to display message popups.
 gw_element is the base element (or "class") of the all other gw-elements, which means that all other gw-elements do inherit all properties, methods and hooks of the gw_element. 
 It isn't drawn at all if you add it to the gui, but it can be used as a invisible container for other elements (like div in html).
 
+####Constructor
+gw_element.create(id, x, y, width, height)
+
 ####Properties
 
 - id: (string) Identifier of the element. Not required for child elements.
@@ -305,21 +308,25 @@ It isn't drawn at all if you add it to the gui, but it can be used as a invisibl
 - textSize: (string) possible values are "tiny","small","medium","large"
 - active: (boolean, default = true) if active = false then the element is not drawn.
 
-####Methods
-- addChild 
-- drawSelf 
-- draw 
-- setRelativePosition 
-- moveAfter
-- moveBelow
-- getAncestor 
-- deactivate
-- activate
-- getChild
+####Public methods
+- addChild(gw_element) 
+- setRelativePosition(position): (string or table of strings) top,middle,bottom,left,center,right,after_previous,below_previous
+- moveAfter(gw_element)
+- moveBelow(gw_element)
+- getAncestor() returns the first parent of the element 
+- deactivate() deactivates the element (and it's possible child elements) so that it's not drawn.
+- activate() activates the element so the element id drawn
+- getChild(gw_element.id) returns the child element by id
+
+####"Private" methods
+These are called automatically by the framework and are important only if you are creating your own widgets.
+- drawSelf(self,ctx,[champion]) 
+- draw(self,ctx,[champion]) 
 
 ####Hooks
-- onPress
-- onClick 
+- onPress(self)
+- onClick(self) 
+- onDraw(self,ctx,champion)
 
 
 ### How to use gwElement?
