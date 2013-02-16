@@ -1,6 +1,9 @@
 grimwidgets
 ===========
 
+Written by Xanathar, JKos, Thomson. Includes large chunks of
+code written by Mahric.
+
 ## DESCRIPTION
 
 The goal of this project is to develop a flexible framework
@@ -13,6 +16,8 @@ support for:
 - encounters with NPCs
 - shops
 - scripted events
+
+[[_TOC_]]
 
 ## INSTALLATION
 
@@ -85,7 +90,8 @@ etc.
 
 An example run of such a GUI:
 
-[[doc/dialog-ok.png|Example fo Dialog.quickDialog(text, callback)]]
+[[doc/dialog-ok.png]]
+[[doc/dialog-ok.png|alt=Example fo Dialog.quickDialog(text, callback)]]
 
 
 ## Elements
