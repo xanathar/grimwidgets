@@ -23,8 +23,8 @@ TODO
 
 ## Demo
 The easiest way to see grimwidgets examples is to download working demo.
-You can do this by going to [[project webite|https://github.com/xanathar/grimwidgets]]
-and clicking [[download|https://github.com/xanathar/grimwidgets/archive/master.zip]] 
+You can do this by going to [project website](https://github.com/xanathar/grimwidgets)
+and clicking [download](https://github.com/xanathar/grimwidgets/archive/master.zip) 
 (the cloud button with ZIP written on it). It will download a zip file
 that you should extract into your dungeons directory. Depending on your OS,
 this will be:
