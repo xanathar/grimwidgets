@@ -22,7 +22,7 @@ support for:
 Download the installation zip from [here](https://github.com/xanathar/grimwidgets/blob/master/grimwidgets.zip?raw=true) 
 And unzip it to your dungeon's base folder eg ...Legend of Grimrock/Dugeons/Your Dungeon/.
 
-Then include grimwidgets from init.lua after standard assets and before custom assets, so your init lua should look something like this:
+Then include grimwidgets from init.lua after standard assets and before custom assets, so your init.lua should look something like this:
 ```lua
 -- import standard assets
 import "assets/scripts/standard_assets.lua"
@@ -407,40 +407,40 @@ gw_element.create(id, x, y, width, height)
 
 ####Properties
 
-- id: (string) Identifier of the element. Not required for child elements.
-- x: (int) horizontal position of the element. 
-- y: (int) vertical position of the element
-- marginLeft: (int, default 0) Margin to the element on the left side.
-- marginTop: (int, default 0) Margin to the element on the top.
-- width: (int, default 0) element width
-- height: (int, default 0) element height
-- parent: (gw_element) parent of the element
-- children: (table of gw_element:s) 
-- firstMousePressPoint = nil
-- color: (table of integer:s) color of the element {red,green,blue,alpha} eg. {200,200,0,255}
-- textColor: (table of integer:s) color of the element text {red,green,blue,alpha}
-- textSize: (string) possible values are "tiny","small","medium","large"
-- active: (boolean, default = true) if active = false then the element is not drawn.
+- **id**: (string) Identifier of the element. Not required for child elements.
+- **x**: (int) horizontal position of the element. 
+- **y**: (int) vertical position of the element
+- **marginLeft**: (int, default 0) Margin to the element on the left side.
+- **marginTop**: (int, default 0) Margin to the element on the top.
+- **width**: (int, default 0) element width
+- **height**: (int, default 0) element height
+- **parent**: (gw_element) parent of the element
+- **children**: (table of gw_element:s) 
+- **color**: (table of integer:s) color of the element {red,green,blue,alpha} eg. {200,200,0,255}
+- **textColor**: (table of integer:s) color of the element text {red,green,blue,alpha}
+- **textSize**: (string) possible values are "tiny","small","medium","large"
+- **active**: (boolean, default = true) if active = false then the element is not drawn.
+
 
 ####Public methods
-- addChild(gw_element) 
-- setRelativePosition(position): (string or table of strings) top,middle,bottom,left,center,right,after_previous,below_previous
-- moveAfter(gw_element)
-- moveBelow(gw_element)
-- getAncestor() returns the first parent of the element 
-- deactivate() deactivates the element (and it's possible child elements) so that it's not drawn.
-- activate() activates the element so the element id drawn
-- getChild(gw_element.id) returns the child element by id
+- **addChild(gw_element)**
+- **setRelativePosition(position)**: (string or table of strings) top,middle,bottom,left,center,right,after_previous,below_previous
+- **moveAfter(gw_element)**
+- **moveBelow(gw_element)**
+- **getAncestor()**: returns the first parent of the element 
+- **deactivate()**: deactivates the element (and possible child elements) so that it's not drawn.
+- **activate()**: activates the element so that the element is drawn
+- **getChild(gw_element.id)**: returns the child element by id
 
 ####"Private" methods
 These are called automatically by the framework and are important only if you are creating your own widgets.
-- drawSelf(self,ctx,[champion]) 
-- draw(self,ctx,[champion]) 
+- **drawSelf(self,ctx,[champion])** 
+- **draw(self,ctx,[champion])** 
 
 ####Hooks
-- onPress(self)
-- onClick(self) 
-- onDraw(self,ctx,champion)
+- **onPress(self)**: I called when the element is clicked
+- **onClick(self)**: I called when the element is clicked 
+- **onDraw(self,ctx,champion)**: Is called before the element is drawm if the hook returns false the element is not drawn at all.
 
 
 ### How to use gwElement?
