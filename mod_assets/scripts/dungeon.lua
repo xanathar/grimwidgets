@@ -174,7 +174,7 @@ function getRuneImage(runeChar)\
 \9\9I='rune9_water'\
 \9}\
 \
-\9return 'mod_assets/textures/'..runeMap[runeChar]..'.tga'\
+\9return 'mod_assets/grimwidgets/images/'..runeMap[runeChar]..'.tga'\
 end\
 \
 function getRunePosition(runeChar)\
@@ -202,7 +202,7 @@ function setSpells(pspells)\
 end\
 \
 function createSpellBook()\
-\9local book = gw_image.create('spell_book_mage',20,20,900,800,'mod_assets/textures/book_900.tga')\
+\9local book = gw_image.create('spell_book_mage',20,20,900,800,'mod_assets/grimwidgets/images/book_900.tga')\
 \9book.onDraw = function(self,ctx,champion) \
 \9\9if champion and champion:getClass() ~= 'Mage' then\
 \9\9\9return false\
@@ -302,7 +302,7 @@ function drawCompass(self, g)\
 \9local y = g.height - 200\
 \9\
 \9local dir = string.sub(\"NESW\", party.facing + 1, party.facing + 1)\
-\9g.drawImage(\"mod_assets/textures/compass_full_\"..dir..\".tga\", x, y)\
+\9g.drawImage(\"mod_assets/grimwidgets/images/compass_full_\"..dir..\".tga\", x, y)\
 end\
 \
 -- this is a simple wrapper function that is called as key press\
@@ -438,7 +438,7 @@ spawn("script_entity", 12,14,2, "new_champion")
 \9\9class = \"Mage\",     -- must be one of: Figther, Rogue, Mage or Ranger\
 \9\9sex = \"male\", \9\9-- must be one of: male, female\
 \9\9level = 3,          -- character's level\
-\9\9portrait = \"mod_assets/textures/portraits/taghor.dds\", -- must be 128x128 dds file\
+\9\9portrait = \"mod_assets/grimwidgets/images/portraits/taghor.dds\", -- must be 128x128 dds file\
 \9\9\
 \9\9-- allowed skills: air_magic, armors, assassination, athletics, axes, daggers, \
 \9\9-- dodge, earth_magic, fire_magic, ice_magic, maces, missile_weapons, spellcraft,\
@@ -634,7 +634,7 @@ commodo molestie augue adipiscing ac. In hac habitasse platea dictumst.Maecenas 
 \9\9\9book.textColor = {200,200,200,210}\
 \9\9\9book:addPageHeader(2,'Different font color for this page.')\
 \9\9\9book:addPageText(2,'Lets and an image here')\
-\9\9\9book:addPageImage(2,'mod_assets/textures/compass_full_E.tga',200,200)\
+\9\9\9book:addPageImage(2,'mod_assets/grimwidgets/images/compass_full_E.tga',200,200)\
 \9\9\9book:addPageText(2,'and some text below it')\
 \9\9\9local text = book:addPageText(2,\"It's possible to change the position of the text like this\")\
 \9\9\9text.x = text.x + 40\
