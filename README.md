@@ -19,7 +19,43 @@ support for:
 
 ## INSTALLATION
 
-TODO
+Download the installation zip from [here](https://github.com/xanathar/grimwidgets/blob/master/grimwidgets.zip?raw=true) 
+And unzip it to your dungeon's base folder eg ...Legend of Grimrock/Dugeons/Your Dungeon/.
+
+Then include grimwidgets from init.lua after standard assets and before custom assets, so your init lua should look something like this:
+```lua
+-- import standard assets
+import "assets/scripts/standard_assets.lua"
+-- import grimwidgets
+import "mod_assets/grimwidgets/grimwidgets.lua"
+-- import custom assets
+import "mod_assets/scripts/items.lua"
+import "mod_assets/scripts/monsters.lua"
+import "mod_assets/scripts/objects.lua"
+import "mod_assets/scripts/wall_sets.lua"
+import "mod_assets/scripts/recipes.lua"
+import "mod_assets/scripts/spells.lua"
+import "mod_assets/scripts/materials.lua"
+import "mod_assets/scripts/sounds.lua"
+```
+
+Next you have to open the dungeon editor and create a new script entity named logfw_init 
+and copy paste this code in it:
+```lua
+spawn("LoGFramework", party.level,1,1,0,'fwInit')
+fwInit:open() 
+function main()
+   fwInit:close() 
+end
+```
+Profit! It's done.
+
+
+Installer zip contents:
+- mod_assests/grimwidgets: Grimwidgets scripts and resources 
+- mod_assests/framework: LoG Framework. See details from [here](https://sites.google.com/site/jkosgrimrock2/home)
+	If you have LoG framework installed already you can just overwrite the contents of the framework folder, grimwidgets includes the latest version.
+
 
 ## Demo
 The easiest way to see grimwidgets examples is to download working demo.
