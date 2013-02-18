@@ -50,7 +50,7 @@ end
 ```
 Profit! It's done.
 
-You can verify the the installation was succesfull with this simple script:
+You can verify that the installation was succesfull with this simple script:
 ```lua
 function autoexec()
     local button = gw_button.create('test_button',100,100,'It works')
@@ -61,7 +61,7 @@ function autoexec()
     gw.addElement(button)
 end
 ```
-just copy paste it to some script entity, it will be executed automatically (autoexec is grimq-feature).
+just copy paste it to some script entity, it will be executed automatically.
 
 Installer zip contents:
 - mod_assests/grimwidgets: Grimwidgets scripts and resources 
