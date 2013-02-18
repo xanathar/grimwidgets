@@ -50,12 +50,24 @@ end
 ```
 Profit! It's done.
 
+You can verify the the installation was succesfull with this simple script:
+```lua
+function autoexec()
+    local button = gw_button.create('test_button',100,100,'It works')
+    button.onPress = function(self)
+    	gw.removeElement(self.id)
+    end
+    
+    gw.addElement(button)
+end
+```
+just copy paste it to some script entity, it will be executed automatically (autoexec is grimq-feature).
 
 Installer zip contents:
 - mod_assests/grimwidgets: Grimwidgets scripts and resources 
 - mod_assests/framework: LoG Framework. See details from [here](https://sites.google.com/site/jkosgrimrock2/home)
 	If you have LoG framework installed already you can just overwrite the contents of the framework folder, grimwidgets includes the latest version.
-
+NOTE: Xanathars grimq is also included to grimwidgets, so it's possible to use its features (like autoexec) too.
 
 ## Demo
 The easiest way to see grimwidgets examples is to download working demo.
