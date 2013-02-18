@@ -489,12 +489,12 @@ There are 3 ways how gw_elements can be created
     local image = gw_image.create('image_id',0,0,'mod_assets\griwidgets\images\compass_full_E.tga')
     -- by calling gw.create(elementType,elementId,x,y,arg1,arg2,arg3)
     local image = gw.create('image','image_id',0,0,'mod_assets\griwidgets\images\compass_full_E.tga')
-    -- or by calling the gw.new factory method which supports named parameters
+    -- or by calling the gw.new factory method which supports named arguments
     local image = gw.new{'image',id='image_id',image='mod_assets\griwidgets\images\compass_full_E.tga'}
 ```
 
 ####gw.new(elementDefinition)
-gw.new method propably needs some clarification. Basically it's possible to prefill any properties of the element with it, like this:
+gw.new method propably needs some clarification. Basically it's possible to set any properties of the element with it, like this:
 ```lua
     local button = gw.new{
     	'button',
@@ -508,9 +508,10 @@ gw.new method propably needs some clarification. Basically it's possible to pref
     button.color={200,200,200,255}
     button.textColor={200,200,200,255}
     button.textSize='medium'
-    -- as you can see you can skip some constructor parameters with gw.new, like x and y which are 0 by default.
+    -- as you can see you can skip some constructor arguments with gw.new, like x and y which are 0 by default.
 ```
-You must use curly bracets with gw.new as it accepts a single array as an argument.
+You must use curly bracets with gw.new as it accepts a single array as an argument. You can use any method you like, there is no other difference but the syntax.
+
 
 
 ### Displaying elements
