@@ -492,6 +492,27 @@ There are 3 ways how gw_elements can be created
     -- or by calling the gw.new factory method which supports named parameters
     local image = gw.new{'image',id='image_id',image='mod_assets\griwidgets\images\compass_full_E.tga'}
 ```
+
+####gw.new(elementDefinition)
+gw.new method propably needs some clarification. Basically it's possible to prefill any properties of the element with it, like this:
+```lua
+    local button = gw.new{
+    	'button',
+    	text='push me',
+    	color={200,200,200,255},
+    	textColor={0,0,0,255},
+    	textSize='medium'
+    }
+    -- Which is actually the same as calling
+    local button = gw_button.create('my_button',0,0,'push_me')
+    button.color={200,200,200,255}
+    button.textColor={200,200,200,255}
+    button.textSize='medium'
+    -- as you can see you can skip some constructor parameters with gw.new, like x and y which are 0 by default.
+```
+You must use curly bracets with gw.new as it accepts a single array as an argument.
+
+
 ### Displaying elements
 The following call can be used for that
 purpose:
