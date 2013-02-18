@@ -393,11 +393,13 @@ The most common reason to use grimwidgets is to display message popups.
 
 
 - gw_element
+- gw_rectangle
 - gw_button
 - gw_button3D
-- gw_rectangle
+- gw_image
+- gw_text
 
-### gw_element
+## gw_element
 
 gw\_element is the base element (or "class") of the all other gw-elements, which means that all other gw-elements do inherit all properties, methods and hooks of the gw\_element. 
 It isn't drawn at all if you add it to the gui, but it can be used as a invisible container for other elements (like div in html).
@@ -408,15 +410,16 @@ gw_element.create(id, x, y, width, height)
 ####Properties
 
 - **id**: (string) Identifier of the element. Not required for child elements.
-- **x**: (int) horizontal position of the element. 
-- **y**: (int) vertical position of the element
+- **x**: (int, default 0) horizontal position of the element. 
+- **y**: (int default 0) vertical position of the element
 - **marginLeft**: (int, default 0) Margin to the element on the left side.
 - **marginTop**: (int, default 0) Margin to the element on the top.
 - **width**: (int, default 0) element width
 - **height**: (int, default 0) element height
 - **parent**: (gw_element) parent of the element
-- **children**: (table of gw_element:s) 
+- **children**: (table of gw_element:s, numerically indexed) 
 - **color**: (table of integer:s) color of the element {red,green,blue,alpha} eg. {200,200,0,255}
+- **text**: (string) Text to be shown inside of the element. If the text is wider than the element it will be wrapped automatically.
 - **textColor**: (table of integer:s) color of the element text {red,green,blue,alpha}
 - **textSize**: (string) possible values are "tiny","small","medium","large"
 - **active**: (boolean, default = true) if active = false then the element is not drawn.
@@ -442,11 +445,55 @@ These are called automatically by the framework and are important only if you ar
 - **onClick(self)**: I called when the element is clicked 
 - **onDraw(self,ctx,champion)**: Is called before the element is drawm if the hook returns false the element is not drawn at all.
 
+## gw_rectangle
+Basic rectangle widget
+####Constructor
+```lua
+    gw_rectangle.create(id, x, y, width, height)
+```
 
-### How to use gwElement?
-There are many ways gwElements can be used.
+## gw_button
+Basic button widget, the width of the button is calculated automatically by the width of the text.
 
-First obvious one is to just diplay it. The following call can be used for that
+####Constructor
+```lua
+    gw_button.create(id, x, y, text)
+```
+
+## gw_image
+
+####Constructor
+```lua
+    gw_image.create(id, x, y, width, height, filename)
+```
+
+####Properties
+- **image**: Path to the image file
+
+## gw_text
+Just plain text without rectangle as a backgroud.
+
+####Constructor
+```lua
+    gw_text.create(id, x, y, width, height, text)	
+```
+####Methods
+- calculateHeight(): Adjusts the widget height to match the height of the contained text.
+
+## How to use gw_element?
+
+### Creating elements
+There are 3 ways how gw_elements can be created
+```lua
+    -- by calling the constructor
+    local image = gw_image.create('image_id',0,0,'mod_assets\griwidgets\images\compass_full_E.tga')
+    -- by calling gw.create(elementType,elementId,x,y,arg1,arg2,arg3)
+    local image = gw.create('image','image_id',0,0,'mod_assets\griwidgets\images\compass_full_E.tga')
+    -- or by calling the gw.new factory method which supports named parameters
+    local image = gw.new{'image',id='image_id',image='mod_assets\griwidgets\images\compass_full_E.tga'}
+```
+### Displaying elements
+The following call can be used for that
 purpose:
 
     gw.addElement(gwElement, hookName)
