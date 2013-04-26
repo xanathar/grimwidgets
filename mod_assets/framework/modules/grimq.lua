@@ -10,12 +10,20 @@
 -- ------------------------------------------------------------------------
 
 fw_addModule('grimq',[[
+-- ------------------------------------------------------------------------
+-- This project is developed by Marco Mastropaolo (Xanathar) 
+-- as a personal project and is in no way affiliated with Almost Human.
+-- You can use this scripts in any Legend of Grimrock dungeon you want; 
+-- credits are appreciated though not necessary.
+-- ------------------------------------------------------------------------
+-- If you want to use this code in a Lua project outside Grimrock, 
+-- please refer to the files and license included 
+-- at http://code.google.com/p/lualinq/
+-- ------------------------------------------------------------------------
+
 ---------------------------------------------------------------------------
 -- CONFIGURATION OPTIONS                                                 --
 ---------------------------------------------------------------------------
-
--- CHANGE THIS ACCORDING TO YOUR DUNGEON!
-MAXLEVEL = 1
 
 -- change this if you don't want all secrets to be "auto"
 AUTO_ALL_SECRETS = true
@@ -29,18 +37,23 @@ LOG_LEVEL = 0
 -- prefix for the printed logs
 LOG_PREFIX = "GrimQ: "
 
+-- set this to false when the allEntities bug gets fixed for faster iterations
+PATCH_ALLENTITIES_BUG = true
+
 
 ---------------------------------------------------------------------------
 -- IMPLEMENTATION BELOW, DO NOT CHANGE
 ---------------------------------------------------------------------------
 
 VERSION_SUFFIX = ""
+MAXLEVEL = 1
+CONTAINERITEM_MAXSLOTS = 10
 -- ============================================================
 -- DEBUG TRACER
 -- ============================================================
 
-LIB_VERSION_TEXT = "1.2"
-LIB_VERSION = 120
+LIB_VERSION_TEXT = "1.4.3"
+LIB_VERSION = 143
 
 function _log(level, prefix, text)
 	if (level <= LOG_LEVEL) then
@@ -620,7 +633,7 @@ function fromAliveChampions()
 	for i = 1, 4 do
 		local c = party:getChampion(i)
 		if (c:isAlive() and c:getEnabled()) then
-			collection[i] = c
+			table.insert(collection, c) -- fixed in 1.5
 		end
 	end
 	return fromArrayInstance(collection)
@@ -632,30 +645,8 @@ end
 --		[inventorySlots] => nil, or a table of integers to limit the search to the specified slots
 --		[includeMouse] => if true, the mouse item is included in the search
 function fromChampionInventory(champion, recurseIntoContainers, inventorySlots, includeMouse)
-	if (inventorySlots == nil) then
-		inventorySlots = inventory.all
-	end
-
-	local collection = { }
-	for i = 1, #inventorySlots do
-		local item = champion:getItem(i)
-		
-		if (item ~= nil) then
-			table.insert(collection, item)
-			
-			if (recurseIntoContainers) then
-				for subItem in item:containedItems() do			
-					table.insert(collection, subItem)
-				end
-			end
-		end
-	end
-	
-	if (includeMouse and (getMouseItem() ~= nil)) then
-		table.insert(collection, getMouseItem())
-	end
-	
-	return fromArrayInstance(collection)
+	return fromChampionInventoryEx(champion, recurseIntoContainers, inventorySlots, includeMouse)
+		:select("entity")
 end
 
 -- Returns a grimq structure containing all the items in the party inventory
@@ -666,48 +657,106 @@ function fromPartyInventory(recurseIntoContainers, inventorySlots, includeMouse)
 	return fromChampions():selectMany(function(v) return fromChampionInventory(v, recurseIntoContainers, inventorySlots, includeMouse):toArray(); end)
 end
 
--- [private] Creates an item object
-function _createItemObject(_slotnumber, _item, _champion, _container, _ismouse, _containerSlot)
+-- [private] Creates an extended object
+function _createExtEntity(_slotnumber, _entity, _champion, _container, _ismouse, _containerSlot, _alcove, _isworld)
 	return {
 		slot = _slotnumber,
-		item = _item,
+		entity = _entity,
+		item = _entity, -- this is for backward compatibilty only!!
 		champion = _champion,
 		container = _container,
 		ismouse = _ismouse,
 		containerSlot = _containerSlot,
+		alcove = _alcove,
+		isworld = _isworld,
 		
 		destroy = function(self)
-			local destroyed = false
-			
-			if (self.container ~= nil) then
-				logi("itemObject couldn't be destroyed")
-				destroyed = false
+			if (self.entity == party) then
+				gameover()
+			elseif (self.container ~= nil) then
+				self.container:removeItem(self.slot)
 			elseif (self.slot >= 0) then
 				self.champion:removeItem(self.slot)
-				destroyed = true
-			elseif (ismouse) then
+			elseif (self.ismouse) then
 				setMouseItem(nil)
-				destroyed = true
+			else
+				self.entity:destroy()
 			end
-			return destroyed
+		end,
+				
+		replaceCallback = function(self, constructor)
+			local obj = nil
+			if (self.entity == party) then
+				gameover()
+			elseif (self.container ~= nil) then
+				self.container:removeItem(self.slot)
+				obj = constructor()
+				self.container:insertItem(self.slot, obj)
+			elseif (self.slot >= 0) then
+				self.champion:removeItem(self.slot)
+				obj = constructor()
+				self.champion:insertItem(self.slot, obj)
+			elseif (self.ismouse) then
+				setMouseItem(nil)
+				obj = constructor()
+				setMouseItem(obj)
+			elseif (self.alcove ~= nil) then
+				self.entity:destroy()
+				obj = constructor()
+				self.alcove:addItem(obj)
+			elseif (self.isworld) then
+				local l = self.entity.level
+				local x = self.entity.x
+				local y = self.entity.y
+				local f = self.entity.facing
+				self.entity:destroy()
+				obj = constructor(l, x, y, f)
+			else 
+				logw("itemobject.replaceCallback fallback on incompatible default")
+			end
+			return obj
 		end,
 		
-		replace = function(self, newitem, tryhard)
-			local done = false
-			if (self.container ~= nil) then
-				logi("itemObject couldn't be replaced")
-				done = false
+		replace = function(self, itemname, desiredid)
+			return self:replaceCallback(function(l,x,y,f) return spawn(itemname, l, x, y, f, desiredid); end)
+		end,
+		
+		debug = function(self)
+			local obj = nil
+			if (self.entity == party) then
+				print("=> entity is party")
+			elseif (self.container ~= nil) then
+				print("=> entity is slot " .. self.slot .. " of cont " .. self.container.id)
 			elseif (self.slot >= 0) then
-				self.champion:removeItem(self.slot)
-				self.champion:insertItem(self.slot, newitem)
-				done = true
-			elseif (ismouse) then
-				setMouseItem(nil)
-				setMouseItem(newitem)
+				print("=> entity is slot " .. self.slot .. " of champion ord#" .. self.champion:getOrdinal())
+			elseif (self.ismouse) then
+				print("=> entity is on mouse")
+			elseif (self.alcove ~= nil) then
+				print("=> entity is in alcove " .. self.alcove.id)
+			elseif (self.isworld) then
+				local l = self.entity.level
+				local x = self.entity.x
+				local y = self.entity.y
+				local f = self.entity.facing
+				print("=> entity is in world at level=".. l, " pos = (" .. x .. "," .. y .. ") facing=" .. f)
+			else 
+				logw("itemobject.replaceCallback fallback on incompatible default")
 			end
-			return done
-		end
+			return obj
+		end,
+		
 	}
+end
+
+function _appendContainerItem(collection, item, champion, containerslot)
+	print("appending contents of container " .. item.id)
+	for j = 1, CONTAINERITEM_MAXSLOTS do
+		if (item:getItem(j) ~= nil) then
+			print("  appended " .. item:getItem(j).id)
+			table.insert(collection, _createExtEntity(j, item:getItem(j), champion, item, false, containerslot))
+			_appendContainerItem(collection, item:getItem(j), nil, j)
+		end
+	end
 end
 
 -- Returns a grimq structure containing item objects in the champion's inventory
@@ -725,22 +774,33 @@ function fromChampionInventoryEx(champion, recurseIntoContainers, inventorySlots
 		local item = champion:getItem(i)
 		
 		if (item ~= nil) then
-			table.insert(collection, _createItemObject(i, item, champion, nil, false, -1))
+			table.insert(collection, _createExtEntity(i, item, champion, nil, false, -1))
 			
 			if (recurseIntoContainers) then
-				for subItem in item:containedItems() do			
-					table.insert(collection, _createItemObject(-1, subItem, champion, item, false, i))
-				end
+				_appendContainerItem(collection, item, champion, i)
 			end
 		end
 	end
 	
 	if (includeMouse and (getMouseItem() ~= nil)) then
-		table.insert(collection, _createItemObject(-1, getMouseItem(), nil, nil, true, -1))
+		local item = getMouseItem()
+		table.insert(collection, _createExtEntity(-1, item, nil, nil, true, -1))
+		
+		if (recurseIntoContainers) then
+			_appendContainerItem(collection, item, nil, -1)
+		end
 	end
 	
 	return fromArrayInstance(collection)
 end
+
+-- Returns a grimq structure filled with extended entities of the contents of a container
+function fromContainerItemEx(item)
+	local collection = { }
+	_appendContainerItem(collection, item, nil, -1)
+	return fromArrayInstance(collection)
+end
+
 
 -- Returns a grimq structure containing all the item-objects in the party inventory
 --		[recurseIntoContainers] => true, to recurse into sacks, crates, etc.
@@ -750,15 +810,35 @@ function fromPartyInventoryEx(recurseIntoContainers, inventorySlots, includeMous
 	return fromChampions():selectMany(function(v) return fromChampionInventoryEx(v, recurseIntoContainers, inventorySlots, includeMouse):toArray(); end)
 end
 
--- Returns a grimq structure cotaining all the entities in the dungeon
-function fromAllEntitiesInWorld()
-	local itercoll = { }
-	
-	for i = 1, MAXLEVEL do
-		table.insert(itercoll, allEntities(i))
+-- Returns a grimq structure cotaining all the entities in the dungeon respecting a given *optional* condition
+function fromAllEntitiesInWorld(predicate, refvalue)
+	local result = { }
+
+	if (predicate == nil) then
+		for lvl = 1, MAXLEVEL do
+			for value in fromAllEntities(lvl):toIterator() do
+				table.insert(result, value)
+			end
+		end
+	elseif (type(predicate) == "function") then
+		for lvl = 1, MAXLEVEL do
+			for value in fromAllEntities(lvl):toIterator() do
+				if (predicate(value)) then
+					table.insert(result, value)
+				end				
+			end
+		end
+	else 
+		for lvl = 1, MAXLEVEL do
+			for value in fromAllEntities(lvl):toIterator() do
+				if (value[predicate] == refvalue) then
+					table.insert(result, value)
+				end
+			end
+		end
 	end
 	
-	return fromIteratorsArray(itercoll)
+	return fromArrayInstance(result)
 end
 
 -- Returns a grimq structure cotaining all the entities in an area
@@ -771,11 +851,11 @@ function fromEntitiesInArea(level, x1, y1, x2, y2, skipx, skipy)
 	if (x1 > x2) then stepx = -1; end
 
 	local stepy = 1
-	if (x1 > x2) then stepy = -1; end
+	if (y1 > y2) then stepy = -1; end
 	
 	for x = x1, x2, stepx do
 		for y = y1, y2, stepy do
-			if (skipx ~= x) and (skipy ~= y) then
+			if (skipx ~= x) or (skipy ~= y) then
 				table.insert(itercoll, entitiesAt(level, x, y))
 			end
 		end
@@ -801,11 +881,30 @@ function fromEntitiesForward(level, x, y, facing, distance, includeorigin)
 	local dy = dy * distance
 
 	if (includeorigin == nil) or (not includeorigin) then
-		return fromEntitiesInArea(x, y, x + dx, y + dy, x, y)
+		return fromEntitiesInArea(level, x, y, x + dx, y + dy, x, y)
 	else
-		return fromEntitiesInArea(x, y, x + dx, y + dy, x, y)
+		return fromEntitiesInArea(level, x, y, x + dx, y + dy, nil, nil)
 	end
 end
+
+function fromAllEntities(level)
+	if (PATCH_ALLENTITIES_BUG) then
+		local result = { }
+		for i=0,31 do
+			for j=0,31 do
+				for k in entitiesAt(level,i,j) do
+					table.insert(result, k)
+				end
+			end
+		end		
+		return fromArrayInstance(result)
+	else
+		return grimq.from(allEntities(level))
+	end
+end
+
+
+
 
 -- ============================================================
 -- PREDICATES
@@ -821,6 +920,10 @@ end
 
 function isAlcoveOrAltar(entity)
 	return entity.getItemCount ~= nil
+end
+
+function isContainerOrAlcove(entity)
+	return entity.containedItems ~= nil
 end
 
 function isDoor(entity)
@@ -884,34 +987,34 @@ end
 -- ============================================================
 
 -- saves an item into the table
-function saveItem(item)
+function saveItem(item, slot)
    local itemTable = { }
+   itemTable.id = item.id
    itemTable.name = item.name
    itemTable.stackSize = item:getStackSize()
    itemTable.fuel = item:getFuel()
    itemTable.charges = item:getCharges()
    itemTable.scrollText = item:getScrollText()
+   itemTable.scrollImage = item:getScrollImage()
+   itemTable.slot = slot
    
-   local idx = 0
-   for subItem in item:containedItems() do
-	  if (idx == 0) then
-		 itemTable.subItems = { }
-	  end
-	  
-	  itemTable.subItems[idx] = saveItem(subItem)
-	  idx = idx + 1
-   end
+	for j = 1, CONTAINERITEM_MAXSLOTS do
+		if (item:getItem(j) ~= nil) then
+			if (itemTable.subItems == nil) then itemTable.subItems = {}; end
+			table.insert(itemTable.subItems, saveItem(item:getItem(j), j))
+		end
+	end
    
    return itemTable
 end
 
 -- loads an item from the table
-function loadItem(itemTable, level, x, y, facing,id)
+function loadItem(itemTable, level, x, y, facing, id, restoresubids)
    local spitem = nil
    if (level ~= nil) then
-	  spitem = spawn(itemTable.name, level, x, y, facing,id)
+	  spitem = spawn(itemTable.name, level, x, y, facing, id)
    else
-	  spitem = spawn(itemTable.name,nil,nil,nil,nil,id)
+	  spitem = spawn(itemTable.name, nil, nil, nil, nil, id)
    end
    if itemTable.stackSize > 0 then
 	  spitem:setStackSize(itemTable.stackSize)
@@ -923,13 +1026,26 @@ function loadItem(itemTable, level, x, y, facing,id)
    if itemTable.scrollText ~= nil then
 	  spitem:setScrollText(itemTable.scrollText)
    end
+      
+   if itemTable.scrollImage ~= nil then
+	  spitem:setScrollImage(itemTable.scrollImage)
+   end
    
    spitem:setFuel(itemTable.fuel)
    
    if (itemTable.subItems ~= nil) then
 	  for _, subTable in pairs(itemTable.subItems) do
-		 local subItem = loadItem(subTable)
-		 spitem:addItem(subItem, false)
+		 local subid = nil
+		 if (restoresubids) then
+			subid = subTable.id
+		 end
+	  
+		 local subItem = loadItem(subTable, nil, nil, nil, nil, subid, restoresubids)
+		 if (subTable.slot ~= nil) then
+			spitem:insertItem(subTable.slot, subItem)
+		 else
+			spitem:addItem(subItem)
+		 end
 	  end
    end
    
@@ -941,34 +1057,35 @@ function copyItem(item)
 	return loadItem(saveItem(item))
 end
 
--- Respawns an item (original id can be used)
--- If level == nil the item will be respawned to object space
-function respawnItem(item,level,x,y,facing,id)
-	id = id or item.id
-	
-    -- if id is numeric then create a new unique id for item
-    -- for some reason numeric id's are not allowed as a spawn-function argument
-   if (id and string.find(id, "^%d+$")) then
-      id = nil
-   end
 
-   local copy = saveItem(item)
-   item:destroy()
-   return loadItem(copy,level,x,y,facing,id)
+
+
+-- Moves an item, preserving id
+function moveItem(item, level, x, y, facing)
+	local saved = saveItem(item)
+	destroy(item)
+	return loadItem(saved, level, x, y, facing, saved.id, true)
+end
+
+-- Moves an item, preserving id, faster version if we know the item is in the world
+function moveItemFromFloor(item, level, x, y, facing)
+	local saved = saveItem(item)
+	item:destroy()
+	return loadItem(saved, level, x, y, facing, saved.id, true)
 end
 
 -- Moves an item to a container/alcove
+-- New 1.4: preserves ids
 function moveFromFloorToContainer(alcove, item)
-	alcove:addItem(copyItem(item))
-	item:destroy()
+	alcove:addItem(moveItemFromFloor(item))
 end
 
+-- New 1.4: preserves ids
 function moveItemsFromTileToAlcove(alcove)
 	from(entitiesAt(alcove.level, alcove.x, alcove.y))
 		:where(isItem)
 		:foreach(function(i) 
-			alcove:addItem(copyItem(i)); 
-			i:destroy(); 
+			moveFromFloorToContainer(alcove, i)
 		end)
 end
 
@@ -1012,9 +1129,230 @@ function setLogLevel(level)
 	LOG_LEVEL = level
 end
 
+-- 1.3
+function directionFromPos(fromx, fromy, tox, toy)
+	local dx = tox - fromx
+	local dy = toy - fromy
+	return directionFromDelta(dx, dy)
+end
+
+function directionFromDelta(dx, dy)
+	if (dx > dy) then dy = 0; else dx = 0; end
+
+	if (dy < 0) then return 0; 
+	elseif (dx > 0) then return 1;
+	elseif (dy > 0) then return 2;
+	else return 3; end
+end
+
+function find(id)
+	local entity = findEntity(id)
+	if (entity ~= nil) then	return entity; end
+	
+	entity = fromPartyInventory(true, inventory.all, true):where("id", id):first()
+	if (entity ~= nil) then	return entity; end
+	
+	local containers = fromAllEntitiesInWorld(isItem)
+				:selectMany(function(i) return from(i:containedItems()):toArray(); end)
+	
+	entity = containers
+		:where(function(ii) return ii.id == id; end)
+		:first()
+	
+	if (entity ~= nil) then	return entity; end
+		
+	entity = containers
+		:selectMany(function(i) return from(i:containedItems()):toArray(); end)
+		:where(function(ii) return ii.id == id; end)
+		:first()
+		
+	return entity
+end
+
+function getEx(entity)
+	-- entity isn't in world, try inventory
+	local itemInInv = fromPartyInventoryEx(true, inventory.all, true)
+		:where(function(i) return i.entity == entity; end)		
+		:first()
+		
+	if (itemInInv ~= nil) then
+		return itemInInv
+	end
+	
+	-- inventory failed, we try alcoves and containers
+	-- if we don't have an entity level, we in an obscure "item in sack in alcove" scenario
+	if (entity.level == nil) then
+		local topcontainers = fromAllEntitiesInWorld(isContainerOrAlcove)
+		
+		local container = topcontainers
+						:where(function(a) return from(a:containedItems()):where(function(ii) return ii == entity; end):any(); end)
+						:first()
+						
+		if (container ~= nil) then
+			local itemInInv = fromContainerItemEx(container)
+				:where(function(i) return i.entity == entity; end)		
+				:first()					
+				
+			return itemInInv
+		end
+		
+		container = topcontainers
+						:selectMany(function(i) return from(i:containedItems()):toArray(); end)
+						:where(function(a) return from(a:containedItems()):where(function(ii) return ii == entity; end):any(); end)
+						:first()
+						
+		if (container ~= nil) then
+			local itemInInv = fromContainerItemEx(container)
+				:where(function(i) return i.entity == entity; end)		
+				:first()					
+				
+			return itemInInv
+		else
+			logw("findAndCallback can't find item " .. entity.id)
+			return
+		end
+	end
+	
+	-- we are in classic alcove or container scenario here
+	local alcoveOrContainer = from(entitiesAt(entity.level, entity.x, entity.y))
+		:where(isContainerOrAlcove)
+		:where(function(a) return from(a:containedItems()):where(function(ii) return ii == entity; end):any(); end)
+		:first()
+		
+	if (alcoveOrContainer ~= nil) then
+		if (isAlcoveOrAltar(alcoveOrContainer)) then
+			return _createExtEntity(-1, entity, nil, nil, false, -1, alcoveOrContainer, nil)
+		else
+			local itemInInv = fromContainerItemEx(alcoveOrContainer)
+				:where(function(i) return i.entity == entity; end)		
+				:first()					
+				
+			return itemInInv		
+		end
+	end
+	
+	-- the simplest case sadly happens last
+	local wentity = findEntity(entity.id)
+	
+	if (wentity ~= nil) then	
+		return _createExtEntity(-1, entity, nil, nil, false, -1, nil, true)
+	end
+	
+	logw("findAndCallback can't find entity " .. entityid)
+end
+
+function gameover()
+	damageTile(party.level, party.x, party.y, party.facing, 64, "physical", 100000000)
+end
+
+function findEx(entityid)
+	local entity = find(entityid)
+	
+	if (entity == nil) then 
+		return nil
+	end
+	
+	return getEx(entity)
+end
+
+function replace(entity, entityToSpawn, desiredId)
+	local ex = getEx(entity)
+	
+	if (ex ~= nil) then
+		ex:replace(entityToSpawn, desiredId)
+	end
+end
+
+function destroy(entity)
+	local ex = getEx(entity)
+	
+	if (ex ~= nil) then
+		ex:destroy()
+	end
+end
+
+function partyGainExp(amount)
+	grimq.fromAliveChampions():foreach(function(c) c:gainExp(amount); end)
+end
 
 
+function shuffleCoords(l, x, y, f, max)
+	local m = 17 * l + 5 * x + 13 * y - 7 * f
+	return (m % max) + 1
+end
 
+function randomReplacer(name, listOfReplace)
+	for o in fromAllEntitiesInWorld("name", name) do
+		local newname = listOfReplace[math.random(1, #listOfReplace)]
+		
+		if (newname ~= "") then
+			spawn(newname, o.level, o.x, o.y, o.facing)
+		end
+		o:destroy()
+	end
+end
+
+function decorateWalls(level, listOfDecorations, useRandomNumbers)
+	for x = -1, 32 do
+		for y = -1, 32 do
+			if (x < 0 or x > 31 or y < 0 or y > 31 or isWall(level, x, y)) then
+				for f = 0, 3 do
+					local dx, dy = getForward(f)
+					if (not isWall(level, x + dx, y + dy)) then
+						local rf = (f + 2) % 4
+						local hasdeco = grimq.from(entitiesAt(level, x + dx, y + dy)):where(function(o)
+							return ((o.facing == rf) or (string.find(o.name, "stairs") ~= nil)) and (not grimq.isItem(o)) and (not grimq.isMonster(o)) end):any()
+						
+						if (not hasdeco) then
+							local index = 1
+							
+							if (useRandomNumbers) then
+								index = math.random(1, #listOfDecorations)
+							else
+								index = shuffleCoords(level, x + dx, y + dy, rf, #listOfDecorations)
+							end
+							
+							local newname = listOfDecorations[index]
+							if (newname ~= "") then
+								if (type(newname) == "table") then
+									for _, w in ipairs(newname) do
+										spawn(w, level, x+dx, y+dy, rf)
+									end
+								else
+									spawn(newname, level, x+dx, y+dy, rf)
+								end
+							end
+						end
+					end
+				end
+			end
+		end
+	end
+end
+
+
+function decorateOver(level, nameOverWhich, listOfDecorations, useRandomNumbers)
+	grimq.fromAllEntities(level):where("name", nameOverWhich):foreach(function(o)
+		local index = 1
+		
+		if (useRandomNumbers) then
+			index = math.random(1, #listOfDecorations)
+		else
+			index = shuffleCoords(level, o.x, o.y, o.facing, #listOfDecorations)
+		end
+		
+		local newname = listOfDecorations[index]
+		if (newname ~= "") then
+			if (type(newname) == "table") then
+				for _, w in ipairs(newname) do
+					spawn(w, level, o.x, o.y, o.facing)
+				end
+			else
+				spawn(newname, level, o.x, o.y, o.facing)
+			end
+		end
+	end)
+end
 
 
 
@@ -1093,22 +1431,22 @@ function _activateAutos()
 	
 	logv("Starting auto-secrets... (AUTO_ALL_SECRETS is " .. tostring(AUTO_ALL_SECRETS) .. ")")
 	if (AUTO_ALL_SECRETS) then
-		fromAllEntitiesInWorld():where("name", "secret"):foreach(_initializeAutoSecret)
+		fromAllEntitiesInWorld("name", "secret"):foreach(_initializeAutoSecret)
 	else
-		fromAllEntitiesInWorld():where(match("id", "^auto_secret")):foreach(_initializeAutoSecret)
+		fromAllEntitiesInWorld(match("id", "^auto_secret")):foreach(_initializeAutoSecret)
 	end
 
 	logv("Starting auto-printers...")
-	fromAllEntitiesInWorld():where("name", "auto_printer"):foreach(_initializeAutoHudPrinter)
+	fromAllEntitiesInWorld("name", "auto_printer"):foreach(_initializeAutoHudPrinter)
 
 	logv("Starting auto-torches...")
-	fromAllEntitiesInWorld():where(match("name", "^auto_")):where(isTorchHolder):foreach(function(auto) if (not auto:hasTorch()) then auto:addTorch(); end; end)
+	fromAllEntitiesInWorld(isTorchHolder):where(match("name", "^auto_")):foreach(function(auto) if (not auto:hasTorch()) then auto:addTorch(); end; end)
 
 	logv("Starting auto-alcoves...")
-	fromAllEntitiesInWorld():where(match("name", "^auto_")):where(isAlcoveOrAltar):foreach(moveItemsFromTileToAlcove)
+	fromAllEntitiesInWorld(isAlcoveOrAltar):where(match("name", "^auto_")):foreach(moveItemsFromTileToAlcove)
 
 	logv("Starting autoexec scripts...")
-	fromAllEntitiesInWorld():where(isScript):foreach(_initializeAutoScript)
+	fromAllEntitiesInWorld(isScript):foreach(_initializeAutoScript)
 	
 	logi("Started.")
 end
@@ -1138,11 +1476,26 @@ end
 
 g_HudPrinters = { }
 
+g_HudPrintFunction = nil
+
+function setFunctionForHudPrint(fn)
+	g_HudPrintFunction = fn
+end
+
+function printHud(text)
+	if (g_HudPrintFunction == nil) then
+		hudPrint(strformat(text))
+	else
+		g_HudPrintFunction(strformat(text))
+	end
+end
+
 function execHudPrinter(source)
 	logv("Executing hudprinter " .. source.id)
 	local text = g_HudPrinters[source.id]
+	
 	if (text ~= nil) then
-		hudPrint(strformat(text))
+		printHud(text)
 	else
 		logw("Auto-hud-printer not found in hudprinters list: " .. source.id)
 	end
@@ -1155,9 +1508,38 @@ function _initializeAutoScript(ntt)
 		ntt:autoexec();
 	end
 	
+	if (ntt.auto_onStep ~= nil) then
+		logv("Install auto_onStep hook for " .. ntt.id .. "...)")
+		spawn("pressure_plate_hidden", ntt.level, ntt.x, ntt.y, ntt.facing)
+		:setTriggeredByParty(true)
+		:setTriggeredByMonster(false)
+		:setTriggeredByItem(false)
+		:setSilent(true)
+		:setActivateOnce(false)
+		:addConnector("activate", ntt.id, "auto_onStep")
+	end
+
+	if (ntt.auto_onStepOnce ~= nil) then
+		logv("Install auto_onStepOnce hook for " .. ntt.id .. "...)")
+		spawn("pressure_plate_hidden", ntt.level, ntt.x, ntt.y, ntt.facing)
+		:setTriggeredByParty(true)
+		:setTriggeredByMonster(false)
+		:setTriggeredByItem(false)
+		:setSilent(true)
+		:setActivateOnce(true)
+		:addConnector("activate", ntt.id, "auto_onStepOnce")
+	end
+end
+	
+function _initializeAutoHooks(ntt)
+	if (ntt.autoexecfw ~= nil) then
+		logv("Executing autoexecfw of " .. ntt.id .. "...)")
+		ntt:autoexecfw();
+	end
+
 	if (ntt.autohook ~= nil) then
-		if (fw == nil or (not USE_JKOS_FRAMEWORK)) then
-			loge("Can't install autohooks in ".. ntt.id .. " -> JKos framework not found or USE_JKOS_FRAMEWORK is false.")
+		if (fw == nil) then
+			loge("_initializeAutoHooks called with nil fw ???.")
 			return
 		end
 
@@ -1174,7 +1556,9 @@ function _initializeAutoScript(ntt)
 	end
 end
 
-
+function _activateJKosFw()
+	fromAllEntitiesInWorld(isScript):foreach(_initializeAutoHooks)
+end
 
 
 
@@ -1187,15 +1571,57 @@ function _banner()
 	logi("GrimQ Version " .. LIB_VERSION_TEXT .. VERSION_SUFFIX .. " - Marco Mastropaolo (Xanathar)")
 end
 
+-- added by JKos
+function activate()
+	if (USE_JKOS_FRAMEWORK) then
+		logi("Starting with jkos-fw bootstrap...")
+		grimq._activateAutos()
+		grimq._activateJKosFw()
+	else
+		loge("JKOS FRAMEWORK DETECTED! Please, enable USE_JKOS_FRAMEWORK at the top of grimq script!");
+	end
+end
 
 _banner()
 
--- added by JKos
+MAXLEVEL = getMaxLevels()
+
+-- Modifications by JKOS ++
+
+-- Respawns an item (original id can be used)
+-- If level == nil the item will be respawned to object space
+
+function respawnItem(item,level,x,y,facing,id)
+	id = id or item.id
+	
+    -- if id is numeric then create a new unique id for item
+    -- for some reason numeric id's are not allowed as a spawn-function argument
+   if (id and string.find(id, "^%d+$")) then
+      id = nil
+   end
+
+   local copy = saveItem(item)
+   item:destroy()
+   return loadItem(copy,level,x,y,facing,id)
+end
+
+
 function activate()
 	USE_JKOS_FRAMEWORK = true
 	MAXLEVEL = getMaxLevels()
 	grimq._activateAutos()
 end
+-- Modifications by JKOS --
+
+if (isWall == nil) then
+	loge("This version of GrimQ requires Legend of Grimrock 1.3.6 or later!")
+end
+--stadard bootstrap removed
+
+
+
+
+
 ]])
 
 fw_loadModule('grimqobjects')

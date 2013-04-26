@@ -30,42 +30,12 @@ function debugPrintHookOrder(namespace)
 	end
 end
 
-function repeatFunction(count,interval,callbackargs,callback,instant)
-	local timer = spawn('timer',party.level,0,0,0)
-	repeatingTimers[timer.id] = {}
-	repeatingTimers[timer.id].args = callbackargs
-	repeatingTimers[timer.id].count = count
-	repeatingTimers[timer.id].callback = callback
-	timer:setTimerInterval(interval)
-	timer:addConnector('activate','fw','executeRepatingTimer') 
-	timer:activate()
-	if (instant) then
-		executeRepatingTimer(timer)
-	end
-end
-
-function executeRepatingTimer(timer)
-	local args = repeatingTimers[timer.id].args
-	repeatingTimers[timer.id].callback(unpack(args))
-	repeatingTimers[timer.id].count =  repeatingTimers[timer.id].count -1
-	if repeatingTimers[timer.id].count < 1 then
-		repeatingTimers[timer.id] = nil
-		timer:deactivate()
-		timer:destroy()
-	end
-end 
-
-function delayCall(interval,callback,callbackargs)
-   if callbackargs == nill then callbackargs = {} end
-   fw.repeatFunction(1, interval, callbackargs, callback, false)
-end
-
 function addHooks(hookNamespace,hooksId,hookFunctions,ordinal)
 	if (not fw.hooks[hookNamespace]) then
 		fw.hooks[hookNamespace] = {}
 	end
 	if (fw.hooks[hookNamespace][hooksId]) then 
-		print("Hooks "..hookNamespace..'.'..hooksId..' already defined')
+		fw.debugPrint("Hooks "..hookNamespace..'.'..hooksId..' already defined')
 		return false
 	end
 	if not fw.hookOrder[hookNamespace] then
@@ -145,7 +115,12 @@ end
 function getById(id)
 	local entity = findEntity(id)
 	if not entity and string.sub(id,1,9) == 'champion_' then
-		return party:getChampion(string.sub(id,-1)+0)
+		for i=1,4 do
+			local champ = party:getChampion(i)
+			if champ and getId(champ) == id then
+				return champ 
+			end
+		end
 	end
 	return entity
 end
@@ -213,183 +188,20 @@ function executeEntityHooks(entityType,methodName,entity,p1,p2,p3)
 	if retVal ~= nil then finalRetVal = retVal end
 	
 	return finalRetVal
-end	
+end		
 
--- custom hooks
-	-- item:onPickup
-	fw.addHooks('party','CustomItemOnPickup',
-		{
-			onPickUpItem = function(self,item)
-				return fw.executeEntityHooks('items','onPickUp',item,self)
-			end
-		}
-	)
+-- DEPRECATED
+function repeatFunction(count,interval,callbackargs,callback,instant)
+	print('fw.repeatFunction is deprecated, use timers.repeatCall(interval,count,instant,callback,args) instead')
+	timers.repeatCall(interval,count,instant,callback,callbackargs)
+end
 
---Vanilla hooks copied from asset pack lua-files ++
+function delayCall(interval,callback,callbackargs)
+	print('fw.delayCall is deprecated, use timers.delaycall(interval,callback,callbackargs) instead')
+	timers.delaycall(interval,callback,callbackargs)
+end
 
-	addHooks('spider','default',
-		{
-		  onDealDamage = function(self, champion, damage)
-			if math.random() <= 0.3 then
-			  champion:setConditionCumulative("poison", 30)
-			end
-		  end
-		}
-	)
-
-	addHooks('ogre','default',
-		{
-		  onDealDamage = function(self, champion, damage)
-			party:shakeCamera(0.5, 0.3)
-			party:playScreenEffect("damage_screen")
-		  end
-		}
-	)
-
-	addHooks('tentacles','default',{  
-		onDealDamage = function(self, champion, damage)
-			if math.random() <= 0.2 then
-			  champion:setConditionCumulative("paralyzed", 10)
-			end
-		  end
-		}
-	)
-
-	addHooks('shrakk_torr','default',{
-		onDealDamage = function(self, champion, damage)
-			if math.random() <= 0.35 then
-			  champion:setConditionCumulative("diseased", 30)
-			end
-		  end
-		}
-	)
-
-	addHooks('warden','default',{
-		onDealDamage = function(self, champion, damage)
-			party:shakeCamera(0.5, 0.3)
-			party:playScreenEffect("damage_screen")
-		  end
-		}
-	)
-
-	addHooks('green_slime','default',{
-		onDealDamage = function(self, champion, damage)
-			if math.random() <= 0.2 then
-			  champion:setConditionCumulative("diseased", 30)
-			end
-		  end
-		}
-	)
-	addHooks('rotten_pitroot_bread','default',{
-		onUseItem = function(self, champion)
-			playSound("consume_food")
-			if math.random() < 0.5 then
-				champion:setCondition("diseased", 20)
-			end
-			champion:modifyFood(250)
-			return true
-		end
-		}
-	)
-	addHooks('tome_health','default',{
-		onUseItem = function(self, champion)
-			playSound("level_up")
-			hudPrint(champion:getName().." gained Health +25.")
-			champion:modifyStatCapacity("health", 25)
-			champion:modifyStat("health", 25)
-			return true
-		end
-		}
-	)
-	addHooks('tome_wisdom','default',{
-		onUseItem = function(self, champion)
-			playSound("level_up")
-			hudPrint(champion:getName().." gained 5 skillpoints.")
-			champion:addSkillPoints(5)
-			return true
-		end
-		}
-	)		
-	addHooks('tome_fire','default',{
-		onUseItem = function(self, champion)
-			playSound("level_up")
-			hudPrint(champion:getName().." gained Resist Fire +10.")
-			champion:trainSkill("fire_magic", 3, true)
-			champion:modifyStatCapacity("resist_fire", 10)
-			champion:modifyStat("resist_fire", 10)
-			return true
-		end
-		}
-	)
-
-	addHooks('water_flask','default',{		
-		onUseItem = function(self, champion)
-			playSound("consume_potion")
-			return true
-		end
-		}
-	)
-
-	addHooks('potion_healing','default',{
-		onUseItem = function(self, champion)
-			playSound("consume_potion")
-			champion:modifyStat("health", 75)
-			return true
-		end
-		}
-	)	
-	addHooks('potion_energy','default',{
-		onUseItem = function(self, champion)
-			playSound("consume_potion")
-			champion:modifyStat("energy", 75)
-			return true
-		end
-		}
-	)	
-	addHooks('potion_poison','default',{
-		onUseItem = function(self, champion)
-			playSound("consume_potion")
-			champion:setConditionCumulative("poison", 50)
-			return true
-		end
-		}
-	)	
-	addHooks('potion_cure_poison','default',{
-		onUseItem = function(self, champion)
-			playSound("consume_potion")
-			champion:setCondition("poison", 0)
-			return true
-		end
-		}
-	)	
-	addHooks('potion_cure_disease','default',{
-		onUseItem = function(self, champion)
-			playSound("consume_potion")
-			champion:setCondition("diseased", 0)
-			champion:setCondition("paralyzed", 0)
-			return true
-		end
-		}
-	)	
-	addHooks('potion_rage','default',{
-		onUseItem = function(self, champion)
-			playSound("consume_potion")
-			champion:setCondition("rage", 60)
-			return true
-		end
-		}
-	)	
-	addHooks('potion_speed','default',{
-		onUseItem = function(self, champion)
-			playSound("consume_potion")
-			champion:setCondition("haste", 50)
-			return true
-		end
-		}
-	)		
--- Vanilla hooks copied from asset pack lua-files --	
-		]]
-)
+]])
 
 local lists = {}
 
@@ -621,6 +433,10 @@ cloneObject{
 	onWakeUp = function(self,p1,p2,p3) return fw.executeHooks("party","onWakeUp",self,p1,p2,p3) end,	
 	onMove = function(self,p1,p2,p3) return fw.executeHooks("party","onMove",self,p1,p2,p3) end,
 	onTurn = function(self,p1,p2,p3) return fw.executeHooks("party","onTurn",self,p1,p2,p3) end,	
+	onDrawGui = function(g) fw.executeHooks("party","onDrawGui",g) end,
+	onDrawInventory = function(g,champion) return fw.executeHooks("party","onDrawInventory",g,champion) end,
+	onDrawStats = function(g,champion) return fw.executeHooks("party","onDrawStats",g,champion) end,
+	onDrawSkills = function(g,champion) return fw.executeHooks("party","onDrawSkills",g,champion) end,
 }
 
 -- this function is called automatically after the fw script entity is initialized

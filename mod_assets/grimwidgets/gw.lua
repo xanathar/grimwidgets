@@ -7,6 +7,31 @@ elements = {
 	inventory = {}
 }
 
+
+function autoexec()
+
+   fw.setHook('party.gw.onDrawGui', function(g)
+         gw._drawGUI(g)
+      end
+   )
+
+   fw.setHook('party.gw.onDrawInventory', function(g,champ)
+         gw._drawInventory(g,champ)
+      end
+   )
+
+   fw.setHook('party.gw.onDrawSkills', function(g,champ)
+         gw._drawSkills(g,champ)
+      end
+   )
+
+   fw.setHook('party.gw.onDrawStats', function(g,champ)
+         gw._drawStats(g,champ)
+      end
+   )
+
+end
+
 defaultColor = {255,255,255,255}
 defaultTextColor = {255,255,255,255}
 

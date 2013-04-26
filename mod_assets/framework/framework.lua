@@ -53,6 +53,7 @@ local showWarnings = true
 local modules = {}	
 local loadOrder = {}
 local moduleInitFunction = {}
+local modulePreInitFunction = {}
 
 --  Set to false if you dont wan't to see warnings about module scripts copy pasted to dungeon
 function fw_setShowWarnings(show)
@@ -63,6 +64,11 @@ function fw_addModule(name,script)
 	modules[name] = script
 	loadOrder[#loadOrder+1] = name 
 end
+
+function fw_addModulePreInitCallback(modulename,callback)
+	modulePreInitFunction[modulename] = callback
+end
+
 function fw_addModuleInitCallback(modulename,callback)
 	moduleInitFunction[modulename] = callback
 end
@@ -79,9 +85,11 @@ function tableToSet(list)
 end
 fw_loadModule('timers')
 fw_loadModule('grimq')
-fw_loadModule('fw')
 fw_loadModule('data')
 fw_loadModule('help')
+fw_loadModule('fw')
+fw_loadModule('fw_default_hooks')
+
 
 
 
@@ -91,9 +99,10 @@ cloneObject{
 	onOpen = function()
 		-- load modules
 		
-		for moduleName,source in pairs(modules) do
+		for _,moduleName in ipairs(loadOrder) do
 			local script = findEntity(moduleName)
 			if not script then 
+				local source = modules[moduleName] 
 				spawn("script_entity", party.level,1,1,0,moduleName) 
 				script = findEntity(moduleName)
 				script:setSource(source)
@@ -102,11 +111,19 @@ cloneObject{
 					print('script entity "'..moduleName..'" found from dungeon, the module from lua file was not loaded')
 				end
 			end
+			if modulePreInitFunction[moduleName] then
+				modulePreInitFunction[moduleName](spawn)
+			end		
+			
 		end
-		spawn('timer',party.level,0,0,0,'logfw_inittimer')
-		logfw_inittimer:addConnector('activate','logfw_init','main')
-		logfw_inittimer:setTimerInterval(0.1)
-		logfw_inittimer:activate()
+		spawn("pressure_plate_hidden", party.level, party.x, party.y, 0,'logfw_init_plate')
+		:setTriggeredByParty(true)
+		:setTriggeredByMonster(false)
+		:setTriggeredByItem(false)
+		:setActivateOnce(true)
+		:setSilent(true)
+		:addConnector('activate','logfw_init','main')		
+		
 	end,
 	onClose = function()
 		for _,moduleName in ipairs(loadOrder) do
@@ -114,13 +131,13 @@ cloneObject{
 			if moduleInitFunction[moduleName] then
 				moduleInitFunction[moduleName](moduleEntity,grimq)
 			end
-			
+			if moduleEntity and moduleEntity.init_module then
+				moduleEntity.init_module()
+			end			
 			if moduleEntity and moduleEntity.activate then
 				moduleEntity.activate()
 			end
 		end		
-		logfw_inittimer:deactivate()
-		logfw_inittimer:destroy()
 		fwInit:destroy()	
 	end
 }
